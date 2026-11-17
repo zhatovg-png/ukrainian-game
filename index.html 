@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моя Україна: Розвиток</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #101820;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background: #1c303b;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 2px solid #d6ad27;
+}
+
+header h1 {
+    margin: 0;
+    color: #ffda55;
+    font-size: 22px;
+}
+
+header p {
+    margin: 6px 0 0;
+    color: #b9c9d1;
+    font-size: 13px;
+}
+
+#startScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: linear-gradient(140deg, #102d27, #101820);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.startBox {
+    width: 100%;
+    max-width: 420px;
+    background: #20343e;
+    border: 1px solid #607780;
+    border-radius: 16px;
+    padding: 25px;
+    text-align: center;
+}
+
+.startBox h2 {
+    color: #ffda55;
+}
+
+.startBox p {
+    color: #c4d0d5;
+    line-height: 1.5;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 7px 0;
+    border-radius: 8px;
+    border: 1px solid #526c70;
+    background: #101d24;
+    color: white;
+}
+
+button {
+    background: #d6ad27;
+    color: #172026;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ffda55;
+}
+
+#game {
+    display: none;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    padding: 10px;
+}
+
+.stat {
+    background: #20343e;
+    padding: 10px 5px;
+    border-radius: 9px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.stat strong {
+    display: block;
+    color: #ffda55;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+#map {
+    height: 55vh;
+    min-height: 350px;
+    width: 100%;
+    background: #b8d5dc;
+    border-top: 2px solid #334c56;
+    border-bottom: 2px solid #334c56;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    padding: 10px;
+}
+
+.menu button {
+    margin: 0;
+    padding: 12px 5px;
+    font-size: 12px;
+    background: #29434e;
+    color: white;
+    border: 1px solid #49636c;
+}
+
+.menu button:hover {
+    background: #42616d;
+}
+
+.panel {
+    background: #1c303b;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.panel h3 {
+    margin-top: 0;
+    color: #ffda55;
+}
+
+#log {
+    max-height: 160px;
+    overflow-y: auto;
+    font-size: 13px;
+    color: #c8d4d9;
+    line-height: 1.6;
+}
+
+.city-marker {
+    background: #e2b92d;
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+}
+
+@media (max-width: 450px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #map {
+        height: 50vh;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="startScreen">
+    <div class="startBox">
+        <h2>🇺🇦 МОЯ УКРАЇНА</h2>
+        <h3>Розвиток країни</h3>
+        <p>
+            Почни свою історію у 2016 році.
+            Обери місце для першого міста,
+            розвивай економіку та створюй власну країну.
+        </p>
+
+        <input
+            id="countryName"
+            type="text"
+            maxlength="30"
+            placeholder="Назва твоєї країни"
+        >
+
+        <input
+            id="cityName"
+            type="text"
+            maxlength="30"
+            placeholder="Назва першого міста"
+        >
+
+        <button onclick="startGame()">
+            ПОЧАТИ ГРУ
+        </button>
+    </div>
+</div>
+
+<header>
+    <h1>🇺🇦 МОЯ УКРАЇНА: РОЗВИТОК</h1>
+    <p>Симулятор розвитку власної країни</p>
+</header>
+
+<div id="game">
+
+    <div class="stats">
+        <div class="stat">
+            Рік
+            <strong id="year">2016</strong>
+        </div>
+
+        <div class="stat">
+            Гроші
+            <strong id="money">100000 ₴</strong>
+        </div>
+
+        <div class="stat">
+            Населення
+            <strong id="population">0</strong>
+        </div>
+
+        <div class="stat">
+            Міста
+            <strong id="cities">0</strong>
+        </div>
+
+        <div class="stat">
+            Села
+            <strong id="villages">0</strong>
+        </div>
+
+        <div class="stat">
+            Стан країни
+            <strong id="condition">Стабільний</strong>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3 id="countryTitle">Моя країна</h3>
+        <p id="mainCity">Перше місто ще не створене</p>
+        <p id="gameStatus">Обери місце на карті для свого міста.</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="menu">
+        <button onclick="showSection('citiesPanel')">🏙 Міста</button>
+        <button onclick="showSection('buildPanel')">🏗 Будівництво</button>
+        <button onclick="showSection('economyPanel')">💰 Економіка</button>
+        <button onclick="showSection('resourcesPanel')">⛏ Ресурси</button>
+        <button onclick="showSection('transportPanel')">🚚 Логістика</button>
+        <button onclick="showSection('politicsPanel')">🏛 Політика</button>
+        <button onclick="showSection('warPanel')">🛡 Війна</button>
+        <button onclick="showSection('peoplePanel')">👥 Населення</button>
+        <button onclick="showSection('logPanel')">📜 Історія</button>
+    </div>
+
+    <div id="citiesPanel" class="panel">
+        <h3>🏙 Міста та села</h3>
+        <div id="cityList">Поки що міст немає.</div>
+    </div>
+
+    <div id="buildPanel" class="panel">
+        <h3>🏗 Будівництво</h3>
+        <div id="buildContent">Обери місто.</div>
+    </div>
+
+    <div id="economyPanel" class="panel">
+        <h3>💰 Економіка</h3>
+        <div id="economyContent"></div>
+    </div>
+
+    <div id="resourcesPanel" class="panel">
+        <h3>⛏ Ресурси</h3>
+        <div id="resourcesContent"></div>
+    </div>
+
+    <div id="transportPanel" class="panel">
+        <h3>🚚 Логістика</h3>
+        <div id="transportContent"></div>
+    </div>
+
+    <div id="politicsPanel" class="panel">
+        <h3>🏛 Політика та вибори</h3>
+        <div id="politicsContent"></div>
+    </div>
+
+    <div id="warPanel" class="panel">
+        <h3>🛡 Військові події</h3>
+        <div id="warContent"></div>
+    </div>
+
+    <div id="peoplePanel" class="panel">
+        <h3>👥 Населення</h3>
+        <div id="peopleContent"></div>
+    </div>
+
+    <div id="logPanel" class="panel">
+        <h3>📜 Історія країни</h3>
+        <div id="log"></div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
