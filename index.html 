@@ -250,6 +250,14 @@ document.querySelectorAll(".tabs button").forEach(function(button){
 });
 
 // КІНЕЦЬ ЧАСТИНИ 1
+
+Частина 1
+Частина 2
+Частина 3
+Частина 4
+Частина 5
+Частина 6
+
 </script>
 </body>
 </html>
