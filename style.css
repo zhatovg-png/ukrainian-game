@@ -1,0 +1,27 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #e4dfcf; color: #1a2330; }
+canvas#map { position: fixed; inset: 0; touch-action: none; cursor: crosshair; }
+.hidden { display: none !important; }
+.good { color: #2e9e4f; } .bad { color: #d6372b; } .warn { color: #e08a00; } .muted { color: #8a93a3; font-size: 12px; }
+
+#top { position: fixed; top: 0; left: 0; right: 0; height: 48px; display: flex; gap: 14px; align-items: center; padding: 0 12px; background: #0b3a6e; color: #fff; border-bottom: 3px solid #ffd500; z-index: 5; overflow-x: auto; white-space: nowrap; }
+#top .brand { font-weight: 700; font-size: 15px; }
+#top .stat { display: flex; flex-direction: column; line-height: 1.1; }
+#top small { font-size: 10px; opacity: .75; text-transform: uppercase; }
+#top b { font-size: 14px; }
+#top em { font-style: normal; font-size: 11px; }
+#top .bad { color: #ff8a80; } #top .good { color: #9be39b; } #top .warn { color: #ffd54f; }
+
+#hint { position: fixed; top: 58px; left: 50%; transform: translateX(-50%); background: rgba(11, 58, 110, .92); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 13px; z-index: 4; max-width: 90vw; text-align: center; }
+#toasts { position: fixed; left: 10px; top: 96px; z-index: 6; display: flex; flex-direction: column; gap: 6px; max-width: min(360px, 80vw); pointer-events: none; }
+.toast { background: rgba(20, 30, 45, .94); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; border-left: 4px solid #4a9bd6; }
+.toast.good { border-color: #4caf50; } .toast.bad { border-color: #e53935; }
+
+#panel { position: fixed; top: 48px; right: 0; bottom: 52px; width: 350px; background: rgba(16, 24, 40, .95); color: #e8edf5; z-index: 4; display: flex; flex-direction: column; }
+#ptabs { display: flex; overflow-x: auto; flex: none; border-bottom: 1px solid #2c3a55; }
+#pbody { flex: 1; overflow-y: auto; padding: 10px 12px 20px; font-size: 13px; }
+#pbody h4 { margin: 14px 0 6px; color: #ffd500; font-size: 13px; }
+.tab { flex: none; background: none; border: 0; color: #9db0cc; padding: 10px 11px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.tab.on { color: #fff; border-bottom: 2px solid #ffd500; }
+.card { background: #1c2a45; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+.card .ct { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
