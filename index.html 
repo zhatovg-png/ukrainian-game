@@ -515,83 +515,114 @@ console.log("Частина 1 завантажена");
  // ЧАСТИНА 3 — СТВОРЕННЯ ДЕРЖАВИ
  // ================================
 
+
+// ================================
+// ЧАСТИНА 3 — ЗАСНУВАННЯ ДЕРЖАВИ (FIX)
+// ================================
+
 (() => {
   const map = document.getElementById("worldMap");
   const territories = document.getElementById("territories");
   const settlements = document.getElementById("settlements");
   const labels = document.getElementById("mapLabels");
-  const foundButton = document.getElementById("foundBtn");
 
-  if (!map || !territories || !settlements || !labels || !foundButton) {
-    console.error("Помилка: не знайдено елементи створення держави");
+  const foundButton = document.getElementById("foundBtn");
+  const countryInput = document.getElementById("countryName");
+  const capitalInput = document.getElementById("capitalName");
+  const modal = document.getElementById("setupModal");
+
+  if (!map || !territories || !settlements || !labels ||
+      !foundButton || !countryInput || !capitalInput || !modal) {
+    console.error("Частина 3: не знайдено потрібні елементи HTML");
     return;
   }
 
-  const countryInput =
-    document.getElementById("countryName") ||
-    document.querySelector('input[placeholder*="держав"]') ||
-    document.querySelector('input[placeholder*="країн"]');
+  if (foundButton.dataset.foundingReady === "true") {
+    console.warn("Обробник заснування вже підключений");
+    return;
+  }
+  foundButton.dataset.foundingReady = "true";
 
-  const capitalInput =
-    document.getElementById("capitalName") ||
-    document.querySelector('input[placeholder*="столи"]');
-
-  const ns = "http://www.w3.org/2000/svg";
+  const NS = "http://www.w3.org/2000/svg";
   const view = map.viewBox.baseVal;
-  const mapWidth = view.width || 1000;
-  const mapHeight = view.height || 700;
+  const W = view.width || 1000;
+  const H = view.height || 700;
 
-  function svgElement(tag, attrs) {
-    const el = document.createElementNS(ns, tag);
+  function svgElement(tag, attrs = {}) {
+    const el = document.createElementNS(NS, tag);
+
     Object.entries(attrs).forEach(([key, value]) => {
       el.setAttribute(key, value);
     });
+
     return el;
   }
 
-  function getSelectedPoint() {
-    if (!window.selectedLocation && typeof selectedLocation === "undefined") {
-      return null;
+  function message(text) {
+    if (typeof showMessage === "function") {
+      showMessage(text);
+      return;
     }
 
-    const point = typeof selectedLocation !== "undefined"
-      ? selectedLocation
-      : window.selectedLocation;
+    let box = document.getElementById("foundingMessage");
+
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "foundingMessage";
+      document.body.appendChild(box);
+    }
+
+    box.textContent = text;
+    box.style.display = "block";
+  }
+
+  function getPoint() {
+    const point = window.selectedLocation;
 
     if (!point) return null;
 
-    let x = Number(point.x ?? point.clientX);
-    let y = Number(point.y ?? point.clientY);
+    const x = Number(point.x);
+    const y = Number(point.y);
 
-    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-
-    if (x <= 1 && y <= 1) {
-      x *= mapWidth;
-      y *= mapHeight;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return null;
     }
 
     return {
-      x: Math.max(20, Math.min(mapWidth - 20, x)),
-      y: Math.max(20, Math.min(mapHeight - 20, y))
+      x: Math.max(20, Math.min(W - 20, x)),
+      y: Math.max(20, Math.min(H - 20, y))
     };
   }
 
-  function createCountryShape(x, y, color) {
-    const points = [
-      [-100,-55],[-55,-100],[15,-95],[90,-60],
-      [110,0],[75,70],[10,100],[-75,75],[-110,10]
+  function randomColor() {
+    const colors = [
+      "#d9a441", "#5998bd", "#75a66a",
+      "#a77ab8", "#cf765d", "#4ca6a0",
+      "#bd8dca", "#8b9c55"
     ];
 
-    const polygonPoints = points.map(([dx, dy]) => {
-      return `${x + dx},${y + dy}`;
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function createTerritory(x, y, color) {
+    const offsets = [
+      [-100,-55],[-55,-100],[15,-95],
+      [90,-60],[110,0],[75,70],
+      [10,100],[-75,75],[-110,10]
+    ];
+
+    const points = offsets.map(([dx, dy]) => {
+      const px = Math.max(5, Math.min(W - 5, x + dx));
+      const py = Math.max(5, Math.min(H - 5, y + dy));
+      return `${px},${py}`;
     }).join(" ");
 
     const polygon = svgElement("polygon", {
-      points: polygonPoints,
+      points,
       fill: color,
-      "fill-opacity": "0.28",
+      "fill-opacity": "0.30",
       stroke: color,
-      "stroke-width": "4",
+      "stroke-width": "5",
       "stroke-linejoin": "round",
       class: "player-country-border"
     });
@@ -599,127 +630,171 @@ console.log("Частина 1 завантажена");
     territories.appendChild(polygon);
   }
 
-  function createCapital(x, y, capitalName) {
-    const marker = svgElement("g", {
+  function createCapital(x, y, name) {
+    const group = svgElement("g", {
       transform: `translate(${x} ${y})`,
       class: "player-capital"
     });
 
-    marker.appendChild(svgElement("circle", {
-      cx: 0, cy: 0, r: 13,
+    group.appendChild(svgElement("circle", {
+      cx: 0,
+      cy: 0,
+      r: 15,
       fill: "#f5c542",
-      stroke: "#fff",
-      "stroke-width": "3"
+      stroke: "#ffffff",
+      "stroke-width": "4"
     }));
 
-    marker.appendChild(svgElement("circle", {
-      cx: 0, cy: 0, r: 4,
+    group.appendChild(svgElement("circle", {
+      cx: 0,
+      cy: 0,
+      r: 5,
       fill: "#513a12"
     }));
 
-    settlements.appendChild(marker);
+    settlements.appendChild(group);
 
     const label = svgElement("text", {
-      x: x + 17,
-      y: y - 15,
+      x: x + 20,
+      y: y - 18,
       fill: "#fff2b2",
-      "font-size": "15",
+      "font-size": "17",
       "font-weight": "bold",
       "paint-order": "stroke",
       stroke: "#18232d",
       "stroke-width": "4"
     });
 
-    label.textContent = "★ " + capitalName;
+    label.textContent = "★ " + name;
     labels.appendChild(label);
   }
 
-  function showMessage(message) {
-    let box = document.getElementById("foundingMessage");
+  function createCountryName(x, y, name, color) {
+    const label = svgElement("text", {
+      x,
+      y: y + 135,
+      "text-anchor": "middle",
+      fill: color,
+      "font-size": "19",
+      "font-weight": "bold",
+      "paint-order": "stroke",
+      stroke: "#17212b",
+      "stroke-width": "5"
+    });
 
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "foundingMessage";
-      box.style.cssText =
-        "position:fixed;bottom:18px;left:50%;transform:translateX(-50%);" +
-        "z-index:9999;background:#1d2d3c;color:white;padding:12px 18px;" +
-        "border:1px solid #71869a;border-radius:12px;font-weight:bold;" +
-        "max-width:90%;text-align:center";
-      document.body.appendChild(box);
-    }
-
-    box.textContent = message;
-    box.style.display = "block";
+    label.textContent = name;
+    labels.appendChild(label);
   }
 
-  foundButton.addEventListener("click", () => {
-    if (window.playerCountry) {
-      showMessage("Ти вже заснував свою державу!");
-      return;
-    }
+  function finishFounding(name, capital, point, color) {
+    createTerritory(point.x, point.y, color);
+    createCapital(point.x, point.y, capital);
+    createCountryName(point.x, point.y, name, color);
 
-    const point = getSelectedPoint();
-
-    if (!point) {
-      showMessage("Спочатку постав мітку на карті!");
-      return;
-    }
-
-    const countryName = countryInput
-      ? countryInput.value.trim()
-      : "";
-
-    const capitalName = capitalInput
-      ? capitalInput.value.trim()
-      : "";
-
-    if (!countryName || !capitalName) {
-      showMessage("Введи назву держави та столиці!");
-      return;
-    }
-
-    const colors = [
-      "#e3a342", "#4b9ed0", "#70ad68",
-      "#b17ac2", "#d46e69", "#55b7a7"
-    ];
-
-    const color = colors[Math.floor(Math.random() * colors.length)];
-
-    createCountryShape(point.x, point.y, color);
-    createCapital(point.x, point.y, capitalName);
-
-    window.playerCountry = {
-      name: countryName,
-      capital: capitalName,
+    const country = {
+      id: "player_" + Date.now(),
+      name,
+      capital,
+      color,
       x: point.x,
       y: point.y,
-      color: color,
-      population: 1000,
-      treasury: 50000,
       year: 2016,
-      cities: [capitalName],
-      founded: true
+      population: 100,
+      treasury: 10000,
+      food: 500,
+      wood: 300,
+      stone: 200,
+      iron: 100,
+      army: 0,
+      happiness: 75
     };
 
+    window.playerCountry = country;
     window.gameStarted = true;
+    window.selectedLocation = point;
 
-    const modal = document.getElementById("setupModal");
-    if (modal) modal.style.display = "none";
-
-    const countryDisplay = document.getElementById("countryDisplay");
-    if (countryDisplay) {
-      countryDisplay.textContent = countryName;
+    if (typeof selectedLocation !== "undefined") {
+      selectedLocation = point;
     }
 
-    showMessage("Державу «" + countryName + "» засновано!");
+    const display = document.getElementById("countryDisplay");
+    if (display) display.textContent = name;
 
-    foundButton.disabled = true;
+    const year = document.getElementById("yearDisplay");
+    if (year) year.textContent = "2016";
 
-    console.log("Створено державу:", window.playerCountry);
+    const population = document.getElementById("populationDisplay");
+    if (population) population.textContent = "100";
+
+    const treasury = document.getElementById("treasuryDisplay");
+    if (treasury) treasury.textContent = "10000 ₴";
+
+    const food = document.getElementById("foodDisplay");
+    if (food) food.textContent = "500";
+
+    const wood = document.getElementById("woodDisplay");
+    if (wood) wood.textContent = "300";
+
+    const stone = document.getElementById("stoneDisplay");
+    if (stone) stone.textContent = "200";
+
+    const iron = document.getElementById("ironDisplay");
+    if (iron) iron.textContent = "100";
+
+    modal.style.display = "none";
+
+    message("🏛 Державу «" + name + "» засновано!");
+
+    window.dispatchEvent(new CustomEvent("countryFounded", {
+      detail: country
+    }));
+
+    console.log("Державу створено:", country);
+  }
+
+  foundButton.addEventListener("click", function(event) {
+    event.preventDefault();
+
+    if (window.gameStarted) {
+      message("Держава вже заснована!");
+      return;
+    }
+
+    const name = countryInput.value.trim();
+    const capital = capitalInput.value.trim();
+
+    if (!name) {
+      message("Введи назву держави!");
+      countryInput.focus();
+      return;
+    }
+
+    if (!capital) {
+      message("Введи назву столиці!");
+      capitalInput.focus();
+      return;
+    }
+
+    const point = getPoint();
+
+    if (!point) {
+      message("Спочатку постав мітку на карті!");
+      return;
+    }
+
+    const color = randomColor();
+
+    try {
+      finishFounding(name, capital, point, color);
+    } catch (error) {
+      console.error("Помилка заснування держави:", error);
+      message("Не вдалося заснувати державу. Перевір консоль.");
+    }
   });
 
-  console.log("Частина 3 завантажена");
+  console.log("Частина 3 завантажена: кнопка заснування активна");
 })();
+
 
 // ===================================
 // ЧАСТИНА 4 — РОЗВИТОК МІСТ ТА ЕКОНОМІКА
