@@ -329,3 +329,1824 @@ button:hover {
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+const gameData = {
+    country: "",
+    year: 2016,
+    money: 100000,
+    cities: [],
+    villages: [],
+    selectedCity: null,
+    resources: {
+        wood: 500,
+        stone: 300,
+        iron: 100,
+        coal: 0,
+        gas: 0,
+        oil: 0,
+        food: 500
+    },
+    buildings: [],
+    history: [],
+    started: false
+};
+
+let map = null;
+let mapMarkers = [];
+let mapLayers = [];
+
+const ukrainianPlaces = [
+    {name: "Київ", lat: 50.4501, lng: 30.5234},
+    {name: "Чернігів", lat: 51.4982, lng: 31.2893},
+    {name: "Житомир", lat: 50.2547, lng: 28.6587},
+    {name: "Вінниця", lat: 49.2331, lng: 28.4682},
+    {name: "Черкаси", lat: 49.4444, lng: 32.0598},
+    {name: "Полтава", lat: 49.5883, lng: 34.5514},
+    {name: "Суми", lat: 50.9077, lng: 34.7981},
+    {name: "Харків", lat: 49.9935, lng: 36.2304},
+    {name: "Дніпро", lat: 48.4647, lng: 35.0462},
+    {name: "Запоріжжя", lat: 47.8388, lng: 35.1396},
+    {name: "Кропивницький", lat: 48.5079, lng: 32.2623},
+    {name: "Миколаїв", lat: 46.9750, lng: 31.9946},
+    {name: "Одеса", lat: 46.4825, lng: 30.7233},
+    {name: "Херсон", lat: 46.6354, lng: 32.6169},
+    {name: "Львів", lat: 49.8397, lng: 24.0297},
+    {name: "Луцьк", lat: 50.7472, lng: 25.3254},
+    {name: "Рівне", lat: 50.6199, lng: 26.2516},
+    {name: "Тернопіль", lat: 49.5535, lng: 25.5948},
+    {name: "Хмельницький", lat: 49.4229, lng: 26.9871},
+    {name: "Івано-Франківськ", lat: 48.9226, lng: 24.7111},
+    {name: "Ужгород", lat: 48.6208, lng: 22.2879},
+    {name: "Чернівці", lat: 48.2915, lng: 25.9403},
+    {name: "Донецьк", lat: 48.0159, lng: 37.8029},
+    {name: "Луганськ", lat: 48.5740, lng: 39.3078}
+];
+
+function addHistory(message) {
+    gameData.history.unshift(message);
+    gameData.history = gameData.history.slice(0, 100);
+
+    const log = document.getElementById("log");
+
+    if (log) {
+        log.innerHTML = gameData.history
+            .map(item => `<div>• ${escapeHTML(item)}</div>`)
+            .join("");
+    }
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function startGame() {
+    if (gameData.started) return;
+
+    const countryName = document.getElementById("countryName").value.trim();
+    const cityName = document.getElementById("cityName").value.trim();
+
+    if (!countryName || !cityName) {
+        alert("Введи назву країни та першого міста!");
+        return;
+    }
+
+    gameData.country = countryName;
+    gameData.started = true;
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    document.getElementById("countryTitle").textContent =
+        "🇺🇦 " + gameData.country;
+
+    document.getElementById("gameStatus").textContent =
+        "Натисни на карту України, щоб обрати місце для першого міста.";
+
+    initializeMap();
+
+    addHistory("2016 рік. Створено країну " + gameData.country);
+    updateInterface();
+
+    window.setInterval(gameTick, 3000);
+}
+
+function initializeMap() {
+    if (map) return;
+
+    map = L.map("map", {
+        center: [48.8, 31.2],
+        zoom: 6,
+        minZoom: 5,
+        maxZoom: 13
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 19
+    }).addTo(map);
+
+    map.on("click", function(event) {
+        createSettlement(event.latlng.lat, event.latlng.lng);
+    });
+
+    ukrainianPlaces.forEach(place => {
+        L.circleMarker([place.lat, place.lng], {
+            radius: 4,
+            color: "#263c46",
+            fillColor: "#ffffff",
+            fillOpacity: 0.9
+        })
+        .addTo(map)
+        .bindTooltip(place.name);
+    });
+
+    addRivers();
+}
+
+function addRivers() {
+    const rivers = [
+        {
+            name: "Дніпро",
+            points: [
+                [51.5, 30.5],
+                [50.8, 30.6],
+                [50.1, 30.5],
+                [49.4, 32.0],
+                [48.5, 34.0],
+                [47.8, 35.1],
+                [46.6, 32.6]
+            ]
+        },
+        {
+            name: "Дністер",
+            points: [
+                [49.0, 26.0],
+                [48.5, 26.5],
+                [48.0, 27.5],
+                [47.5, 28.0],
+                [46.5, 30.0]
+            ]
+        },
+        {
+            name: "Південний Буг",
+            points: [
+                [49.5, 27.0],
+                [49.0, 28.0],
+                [48.5, 29.0],
+                [47.5, 30.0],
+                [46.5, 31.5]
+            ]
+        }
+    ];
+
+    rivers.forEach(river => {
+        const line = L.polyline(river.points, {
+            color: "#2498db",
+            weight: 3,
+            opacity: 0.8
+        }).addTo(map);
+
+        line.bindTooltip(river.name);
+        mapLayers.push(line);
+    });
+}
+
+function createSettlement(lat, lng) {
+    if (!gameData.started) return;
+
+    const insideUkraine =
+        lat >= 44.2 &&
+        lat <= 52.5 &&
+        lng >= 22.0 &&
+        lng <= 40.3;
+
+    if (!insideUkraine) {
+        alert("Обери місце в межах ігрової карти України.");
+        return;
+    }
+
+    if (gameData.cities.length === 0) {
+        createCity(
+            document.getElementById("cityName").value.trim(),
+            lat,
+            lng
+        );
+        return;
+    }
+
+    const answer = confirm(
+        "Створити нове поселення в цьому місці?\n" +
+        "Так — місто\nНі — село"
+    );
+
+    if (answer) {
+        const name = prompt("Назва нового міста:");
+
+        if (name && name.trim()) {
+            createCity(name.trim(), lat, lng);
+        }
+    } else {
+        const name = prompt("Назва нового села:");
+
+        if (name && name.trim()) {
+            createVillage(name.trim(), lat, lng);
+        }
+    }
+}
+
+function createCity(name, lat, lng) {
+    if (!name || !name.trim()) return;
+
+    if (gameData.money < 10000) {
+        alert("Недостатньо гривень для заснування міста!");
+        return;
+    }
+
+    gameData.money -= 10000;
+
+    const city = {
+        id: Date.now() + Math.random(),
+        name: name.trim(),
+        lat: lat,
+        lng: lng,
+        population: 1000,
+        happiness: 75,
+        level: 1,
+        type: "місто",
+        buildings: [],
+        factories: 0,
+        bridges: 0,
+        farms: 0,
+        roads: 0,
+        damaged: false
+    };
+
+    gameData.cities.push(city);
+
+    const marker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(
+            `<b>${escapeHTML(city.name)}</b><br>` +
+            `Населення: ${city.population}`
+        );
+
+    mapMarkers.push(marker);
+
+    document.getElementById("mainCity").textContent =
+        "Головне місто: " + city.name;
+
+    addHistory("Засновано місто " + city.name);
+
+    updateInterface();
+    selectCity(city.id);
+}
+
+function createVillage(name, lat, lng) {
+    if (gameData.money < 2000) {
+        alert("Недостатньо гривень для заснування села!");
+        return;
+    }
+
+    gameData.money -= 2000;
+
+    const village = {
+        id: Date.now() + Math.random(),
+        name: name.trim(),
+        lat: lat,
+        lng: lng,
+        population: 100,
+        level: 1,
+        happiness: 80,
+        type: "село"
+    };
+
+    gameData.villages.push(village);
+
+    const marker = L.circleMarker([lat, lng], {
+        radius: 6,
+        color: "#267b39",
+        fillColor: "#72d77d",
+        fillOpacity: 1
+    })
+    .addTo(map)
+    .bindPopup(
+        `<b>${escapeHTML(village.name)}</b><br>` +
+        `Село<br>Населення: ${village.population}`
+    );
+
+    mapMarkers.push(marker);
+
+    addHistory("Засновано село " + village.name);
+
+    updateInterface();
+}
+
+function selectCity(id) {
+    gameData.selectedCity =
+        gameData.cities.find(city => city.id === id) || null;
+
+    updateInterface();
+}
+
+function updateInterface() {
+    document.getElementById("year").textContent = gameData.year;
+
+    document.getElementById("money").textContent =
+        Math.floor(gameData.money).toLocaleString("uk-UA") + " ₴";
+
+    const totalPopulation =
+        gameData.cities.reduce((sum, city) => sum + city.population, 0) +
+        gameData.villages.reduce((sum, village) => sum + village.population, 0);
+
+    document.getElementById("population").textContent =
+        Math.floor(totalPopulation).toLocaleString("uk-UA");
+
+    document.getElementById("cities").textContent =
+        gameData.cities.length;
+
+    document.getElementById("villages").textContent =
+        gameData.villages.length;
+
+    updateCityList();
+}
+
+function updateCityList() {
+    const container = document.getElementById("cityList");
+
+    if (!container) return;
+
+    let html = "";
+
+    gameData.cities.forEach(city => {
+        html += `
+            <div class="panel">
+                <b>🏙 ${escapeHTML(city.name)}</b>
+                <p>Населення: ${Math.floor(city.population)}</p>
+                <p>Рівень: ${city.level}</p>
+                <p>Задоволеність: ${city.happiness}%</p>
+                <button onclick="selectCity(${city.id})">
+                    Обрати місто
+                </button>
+            </div>
+        `;
+    });
+
+    gameData.villages.forEach(village => {
+        html += `
+            <div class="panel">
+                <b>🏡 ${escapeHTML(village.name)}</b>
+                <p>Населення: ${Math.floor(village.population)}</p>
+                <p>Рівень: ${village.level}</p>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html || "Поселень поки немає.";
+}
+
+// =====================================
+// ЧАСТИНА 3. ЕКОНОМІКА ТА БУДІВНИЦТВО
+// =====================================
+
+const buildingTypes = {
+    house: {
+        name: "Житловий будинок",
+        price: 5000,
+        wood: 20,
+        stone: 10,
+        population: 50
+    },
+    farm: {
+        name: "Ферма",
+        price: 8000,
+        wood: 30,
+        stone: 10,
+        population: 0
+    },
+    factory: {
+        name: "Фабрика",
+        price: 25000,
+        wood: 50,
+        stone: 80,
+        population: 0
+    },
+    sawmill: {
+        name: "Лісопилка",
+        price: 12000,
+        wood: 40,
+        stone: 20,
+        population: 0
+    },
+    quarry: {
+        name: "Кам'яний кар'єр",
+        price: 15000,
+        wood: 30,
+        stone: 40,
+        population: 0
+    },
+    mine: {
+        name: "Шахта",
+        price: 30000,
+        wood: 80,
+        stone: 100,
+        population: 0
+    },
+    market: {
+        name: "Ринок",
+        price: 10000,
+        wood: 30,
+        stone: 20,
+        population: 0
+    },
+    school: {
+        name: "Школа",
+        price: 18000,
+        wood: 40,
+        stone: 50,
+        population: 0
+    },
+    hospital: {
+        name: "Лікарня",
+        price: 30000,
+        wood: 60,
+        stone: 100,
+        population: 0
+    },
+    church: {
+        name: "Церква",
+        price: 15000,
+        wood: 40,
+        stone: 60,
+        population: 0
+    },
+    warehouse: {
+        name: "Склад",
+        price: 12000,
+        wood: 50,
+        stone: 30,
+        population: 0
+    },
+    port: {
+        name: "Морський порт",
+        price: 50000,
+        wood: 100,
+        stone: 150,
+        population: 0
+    },
+    bridge: {
+        name: "Міст",
+        price: 40000,
+        wood: 100,
+        stone: 120,
+        population: 0
+    },
+    road: {
+        name: "Дорога",
+        price: 3000,
+        wood: 5,
+        stone: 10,
+        population: 0
+    }
+};
+
+const resourceSites = [
+    {name: "Лісові масиви", type: "wood", lat: 51.2, lng: 27.0},
+    {name: "Родовища заліза", type: "iron", lat: 48.0, lng: 37.0},
+    {name: "Вугільний басейн", type: "coal", lat: 48.1, lng: 38.0},
+    {name: "Газові родовища", type: "gas", lat: 49.0, lng: 35.0},
+    {name: "Нафтові родовища", type: "oil", lat: 49.0, lng: 24.0},
+    {name: "Кам'яні родовища", type: "stone", lat: 48.5, lng: 25.5}
+];
+
+function showSection(id) {
+    const sections = document.querySelectorAll("#game > .panel");
+
+    sections.forEach(section => {
+        section.style.display = section.id === id ? "block" : "none";
+    });
+
+    const target = document.getElementById(id);
+
+    if (target) {
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+}
+
+function getSelectedCity() {
+    if (!gameData.selectedCity) {
+        alert("Спочатку обери місто!");
+        return null;
+    }
+
+    return gameData.selectedCity;
+}
+
+function updateBuildMenu() {
+    const container = document.getElementById("buildContent");
+
+    if (!container) return;
+
+    const city = gameData.selectedCity;
+
+    if (!city) {
+        container.textContent = "Спочатку обери місто.";
+        return;
+    }
+
+    let html = `<h4>Місто: ${escapeHTML(city.name)}</h4>`;
+
+    Object.entries(buildingTypes).forEach(([key, building]) => {
+        html += `
+            <div class="panel">
+                <b>${escapeHTML(building.name)}</b>
+                <p>Ціна: ${building.price.toLocaleString("uk-UA")} ₴</p>
+                <p>Деревина: ${building.wood} | Камінь: ${building.stone}</p>
+                <button onclick="buildStructure('${key}')">
+                    Побудувати
+                </button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function buildStructure(type) {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    const building = buildingTypes[type];
+
+    if (!building) return;
+
+    if (gameData.money < building.price) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    if (gameData.resources.wood < building.wood ||
+        gameData.resources.stone < building.stone) {
+        alert("Недостатньо будівельних ресурсів!");
+        return;
+    }
+
+    if (type === "port") {
+        const nearWater = city.lng >= 28 && city.lng <= 38 &&
+            city.lat <= 48;
+
+        if (!nearWater) {
+            alert("Для морського порту потрібне узбережжя.");
+            return;
+        }
+    }
+
+    if (type === "bridge") {
+        const nearRiver = city.lat >= 46 && city.lat <= 52;
+
+        if (!nearRiver) {
+            alert("Поблизу немає відповідної річкової ділянки.");
+            return;
+        }
+    }
+
+    gameData.money -= building.price;
+    gameData.resources.wood -= building.wood;
+    gameData.resources.stone -= building.stone;
+
+    city.buildings.push({
+        type: type,
+        name: building.name,
+        builtAt: Date.now()
+    });
+
+    if (type === "farm") city.farms++;
+    if (type === "factory") city.factories++;
+    if (type === "bridge") city.bridges++;
+    if (type === "road") city.roads++;
+
+    if (type === "house") {
+        city.population += building.population;
+    }
+
+    addHistory(
+        "У місті " + city.name +
+        " збудовано: " + building.name
+    );
+
+    updateInterface();
+    updateBuildMenu();
+    updateEconomy();
+    updateResources();
+}
+
+function financeVillage(index, amount) {
+    const village = gameData.villages[index];
+
+    if (!village || !Number.isFinite(amount) || amount <= 0) {
+        return;
+    }
+
+    if (gameData.money < amount) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    gameData.money -= amount;
+
+    village.population += Math.floor(amount / 100);
+
+    village.happiness = Math.min(100, village.happiness + 5);
+
+    addHistory(
+        "Країна профінансувала село " + village.name
+    );
+
+    updateInterface();
+    updateEconomy();
+}
+
+function showVillageFinancing() {
+    const container = document.getElementById("economyContent");
+
+    if (!container) return;
+
+    let html = "<h4>Фінансування сіл</h4>";
+
+    gameData.villages.forEach((village, index) => {
+        html += `
+            <div class="panel">
+                <b>${escapeHTML(village.name)}</b>
+                <p>Населення: ${Math.floor(village.population)}</p>
+                <p>Задоволеність: ${village.happiness}%</p>
+                <button onclick="financeVillage(${index}, 1000)">
+                    Інвестувати 1 000 ₴
+                </button>
+                <button onclick="financeVillage(${index}, 5000)">
+                    Інвестувати 5 000 ₴
+                </button>
+                <button onclick="financeVillage(${index}, 10000)">
+                    Інвестувати 10 000 ₴
+                </button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html || "Сіл поки немає.";
+}
+
+function updateEconomy() {
+    const container = document.getElementById("economyContent");
+
+    if (!container) return;
+
+    const factoryCount = gameData.cities.reduce(
+        (sum, city) => sum + city.factories,
+        0
+    );
+
+    const farmCount = gameData.cities.reduce(
+        (sum, city) => sum + city.farms,
+        0
+    );
+
+    const income = factoryCount * 500 + farmCount * 200;
+
+    container.innerHTML = `
+        <p>Підприємства: ${factoryCount}</p>
+        <p>Ферми: ${farmCount}</p>
+        <p>Орієнтовний дохід за цикл: ${income} ₴</p>
+        <p>Казна: ${gameData.money.toLocaleString("uk-UA")} ₴</p>
+        <button onclick="showVillageFinancing()">
+            Фінансування сіл
+        </button>
+    `;
+}
+
+function updateResources() {
+    const container = document.getElementById("resourcesContent");
+
+    if (!container) return;
+
+    const names = {
+        wood: "Деревина",
+        stone: "Камінь",
+        iron: "Залізо",
+        coal: "Вугілля",
+        gas: "Природний газ",
+        oil: "Нафта",
+        food: "Їжа"
+    };
+
+    let html = "";
+
+    Object.entries(gameData.resources).forEach(([key, value]) => {
+        html += `
+            <p>${names[key]}:
+            <b>${Math.floor(value)}</b></p>
+        `;
+    });
+
+    html += "<h4>Родовища України</h4>";
+
+    resourceSites.forEach(site => {
+        html += `<p>⛏ ${site.name}</p>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function updateTransport() {
+    const container = document.getElementById("transportContent");
+
+    if (!container) return;
+
+    let bridges = 0;
+    let roads = 0;
+    let ports = 0;
+
+    gameData.cities.forEach(city => {
+        bridges += city.bridges;
+        roads += city.roads;
+        ports += city.buildings.filter(
+            building => building.type === "port"
+        ).length;
+    });
+
+    container.innerHTML = `
+        <p>Мости: ${bridges}</p>
+        <p>Дороги: ${roads}</p>
+        <p>Порти: ${ports}</p>
+        <p>Транспортна мережа країни розвивається.</p>
+    `;
+}
+
+// Автоматичне оновлення панелей
+function updateAllPanels() {
+    updateBuildMenu();
+    updateEconomy();
+    updateResources();
+    updateTransport();
+    updateInterface();
+}
+
+// Завершення третьої частини
+
+// =====================================
+// ЧАСТИНА 4. НАСЕЛЕННЯ, РОБОТА ТА ПОЛІТИКА
+// =====================================
+
+gameData.workers = [];
+gameData.shops = [];
+gameData.elections = {
+    active: false,
+    playerVotes: 0,
+    rivalVotes: 0,
+    lastElection: 2016
+};
+
+const jobTypes = [
+    {name: "Робітник фабрики", salary: 500},
+    {name: "Фермер", salary: 350},
+    {name: "Продавець", salary: 300},
+    {name: "Шахтар", salary: 600},
+    {name: "Будівельник", salary: 450},
+    {name: "Водій", salary: 400},
+    {name: "Учитель", salary: 350},
+    {name: "Лікар", salary: 550}
+];
+
+function hireJob(jobIndex) {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    const job = jobTypes[jobIndex];
+
+    if (!job) return;
+
+    const worker = {
+        id: Date.now() + Math.random(),
+        cityId: city.id,
+        job: job.name,
+        salary: job.salary
+    };
+
+    gameData.workers.push(worker);
+
+    addHistory(
+        "У місті " + city.name +
+        " створено робоче місце: " + job.name
+    );
+
+    updatePeople();
+}
+
+function createShop() {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    const shopName = prompt("Назва твого магазину:");
+
+    if (!shopName || !shopName.trim()) return;
+
+    const price = 5000;
+
+    if (gameData.money < price) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    gameData.money -= price;
+
+    gameData.shops.push({
+        id: Date.now() + Math.random(),
+        name: shopName.trim(),
+        cityId: city.id,
+        income: 100,
+        level: 1
+    });
+
+    addHistory(
+        "Відкрито магазин " + shopName +
+        " у місті " + city.name
+    );
+
+    updateInterface();
+    updatePeople();
+}
+
+function upgradeShop(id) {
+    const shop = gameData.shops.find(item => item.id === id);
+
+    if (!shop) return;
+
+    const price = shop.level * 5000;
+
+    if (gameData.money < price) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    gameData.money -= price;
+    shop.level++;
+    shop.income += 100;
+
+    addHistory("Магазин " + shop.name + " покращено.");
+
+    updateInterface();
+    updatePeople();
+}
+
+function generateBotPopulation() {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    const botCount = Math.min(
+        20,
+        Math.floor(city.population / 500)
+    );
+
+    let created = 0;
+
+    while (created < botCount) {
+        const exists = gameData.workers.some(
+            worker =>
+                worker.cityId === city.id &&
+                worker.bot
+        );
+
+        if (exists && created > 0) break;
+
+        const job = jobTypes[
+            Math.floor(Math.random() * jobTypes.length)
+        ];
+
+        gameData.workers.push({
+            id: Date.now() + Math.random(),
+            cityId: city.id,
+            job: job.name,
+            salary: job.salary,
+            bot: true
+        });
+
+        created++;
+    }
+
+    addHistory(
+        "У місті " + city.name +
+        " з'явилися нові мешканці-боти."
+    );
+
+    updatePeople();
+}
+
+function updatePeople() {
+    const container = document.getElementById("peopleContent");
+
+    if (!container) return;
+
+    let html = `
+        <h4>Робота</h4>
+        <p>Робочих місць: ${gameData.workers.length}</p>
+    `;
+
+    jobTypes.forEach((job, index) => {
+        html += `
+            <div class="panel">
+                <b>${escapeHTML(job.name)}</b>
+                <p>Зарплата: ${job.salary} ₴ за ігровий цикл</p>
+                <button onclick="hireJob(${index})">
+                    Створити робоче місце
+                </button>
+            </div>
+        `;
+    });
+
+    html += `
+        <h4>Магазини</h4>
+        <button onclick="createShop()">Відкрити магазин за 5 000 ₴</button>
+    `;
+
+    gameData.shops.forEach(shop => {
+        const city = gameData.cities.find(
+            item => item.id === shop.cityId
+        );
+
+        html += `
+            <div class="panel">
+                <b>🏪 ${escapeHTML(shop.name)}</b>
+                <p>Місто: ${city ? escapeHTML(city.name) : "Невідоме"}</p>
+                <p>Рівень: ${shop.level}</p>
+                <p>Дохід за цикл: ${shop.income} ₴</p>
+                <button onclick="upgradeShop(${shop.id})">
+                    Покращити магазин
+                </button>
+            </div>
+        `;
+    });
+
+    const city = gameData.selectedCity;
+
+    if (city) {
+        html += `
+            <h4>Обране місто</h4>
+            <p>${escapeHTML(city.name)}</p>
+            <p>Населення: ${Math.floor(city.population)}</p>
+            <button onclick="generateBotPopulation()">
+                Поселити ботів
+            </button>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+function startElection() {
+    if (gameData.cities.length === 0) {
+        alert("Спочатку заснуй місто!");
+        return;
+    }
+
+    if (gameData.elections.active) {
+        alert("Вибори вже проводяться!");
+        return;
+    }
+
+    gameData.elections.active = true;
+
+    const totalPopulation = gameData.cities.reduce(
+        (sum, city) => sum + city.population,
+        0
+    );
+
+    const voters = Math.floor(totalPopulation * 0.7);
+
+    gameData.elections.playerVotes = Math.floor(
+        voters * (0.35 + Math.random() * 0.35)
+    );
+
+    gameData.elections.rivalVotes =
+        voters - gameData.elections.playerVotes;
+
+    const playerWins =
+        gameData.elections.playerVotes >
+        gameData.elections.rivalVotes;
+
+    gameData.elections.active = false;
+    gameData.elections.lastElection = gameData.year;
+
+    if (playerWins) {
+        addHistory("Вітаємо! Ти переміг на виборах!");
+        gameData.money += 15000;
+    } else {
+        addHistory("На виборах переміг конкурент.");
+    }
+
+    updatePolitics();
+    updateInterface();
+}
+
+function updatePolitics() {
+    const container = document.getElementById("politicsContent");
+
+    if (!container) return;
+
+    const playerVotes = gameData.elections.playerVotes;
+    const rivalVotes = gameData.elections.rivalVotes;
+
+    container.innerHTML = `
+        <p>Держава: ${escapeHTML(gameData.country)}</p>
+        <p>Останні вибори: ${gameData.elections.lastElection}</p>
+        <p>Твої голоси: ${playerVotes}</p>
+        <p>Голоси конкурента: ${rivalVotes}</p>
+        <button onclick="startElection()">
+            Провести вибори
+        </button>
+    `;
+}
+
+// Автоматичний розвиток мешканців
+function populationGrowth() {
+    gameData.cities.forEach(city => {
+        let growth = Math.max(
+            1,
+            Math.floor(city.population * 0.0002)
+        );
+
+        if (city.happiness < 30) {
+            growth = 0;
+        }
+
+        city.population += growth;
+
+        city.happiness = Math.min(
+            100,
+            Math.max(0, city.happiness)
+        );
+    });
+
+    gameData.villages.forEach(village => {
+        village.population += Math.max(
+            1,
+            Math.floor(village.population * 0.0001)
+        );
+
+        if (village.population >= 5000) {
+            convertVillageToCity(village);
+        }
+    });
+}
+
+function convertVillageToCity(village) {
+    const index = gameData.villages.indexOf(village);
+
+    if (index === -1) return;
+
+    const city = {
+        id: Date.now() + Math.random(),
+        name: village.name,
+        lat: village.lat,
+        lng: village.lng,
+        population: village.population,
+        happiness: village.happiness,
+        level: 1,
+        type: "місто",
+        buildings: [],
+        factories: 0,
+        bridges: 0,
+        farms: 0,
+        roads: 0,
+        damaged: false
+    };
+
+    gameData.cities.push(city);
+    gameData.villages.splice(index, 1);
+
+    const marker = L.marker([city.lat, city.lng])
+        .addTo(map)
+        .bindPopup(
+            `<b>${escapeHTML(city.name)}</b><br>Нове місто`
+        );
+
+    mapMarkers.push(marker);
+
+    addHistory(
+        "Село " + city.name +
+        " отримало статус міста!"
+    );
+}
+
+// Дохід від магазинів
+function shopIncome() {
+    gameData.shops.forEach(shop => {
+        gameData.money += shop.income;
+    });
+}
+
+// Заробіток підприємств
+function factoryIncome() {
+    gameData.cities.forEach(city => {
+        gameData.money += city.factories * 500;
+    });
+}
+
+// Оновлення всіх політичних даних
+function updateAllPeopleSystems() {
+    updatePeople();
+    updatePolitics();
+    updateEconomy();
+    updateInterface();
+}
+
+// Кінець четвертої частини
+
+// =====================================
+// ЧАСТИНА 5. ВІЙНА, ЛОГІСТИКА ТА ЗАПУСК
+// =====================================
+
+gameData.war = {
+    active: false,
+    events: 0,
+    destroyedBridges: 0
+};
+
+gameData.pontoons = [];
+gameData.tick = 0;
+gameData.lastSave = 0;
+
+// =====================================
+// РЕСУРСИ ТА ВИДОБУТОК
+// =====================================
+
+function extractResources() {
+    gameData.cities.forEach(city => {
+        const counts = {};
+
+        city.buildings.forEach(building => {
+            counts[building.type] =
+                (counts[building.type] || 0) + 1;
+        });
+
+        gameData.resources.wood +=
+            (counts.sawmill || 0) * 2;
+
+        gameData.resources.stone +=
+            (counts.quarry || 0) * 2;
+
+        gameData.resources.iron +=
+            (counts.mine || 0) * 2;
+
+        gameData.resources.food +=
+            (counts.farm || 0) * 5;
+
+        gameData.resources.coal +=
+            (counts.mine || 0);
+
+        gameData.resources.wood = Math.min(
+            gameData.resources.wood, 1000000
+        );
+
+        gameData.resources.stone = Math.min(
+            gameData.resources.stone, 1000000
+        );
+    });
+}
+
+// =====================================
+// ЛОГІСТИКА
+// =====================================
+
+function updateLogistics() {
+    const container =
+        document.getElementById("transportContent");
+
+    if (!container) return;
+
+    let bridges = 0;
+    let roads = 0;
+    let ports = 0;
+    let factories = 0;
+
+    gameData.cities.forEach(city => {
+        bridges += city.bridges;
+        roads += city.roads;
+        factories += city.factories;
+
+        ports += city.buildings.filter(
+            building => building.type === "port"
+        ).length;
+    });
+
+    container.innerHTML = `
+        <h4>Транспорт країни</h4>
+        <p>Мости: ${bridges}</p>
+        <p>Дороги: ${roads}</p>
+        <p>Порти: ${ports}</p>
+        <p>Фабрики: ${factories}</p>
+        <p>Понтонні переправи: ${gameData.pontoons.length}</p>
+        <p>Рівень логістики залежить від інфраструктури міст.</p>
+    `;
+}
+
+// =====================================
+// ВІЙСЬКОВІ ПОДІЇ
+// =====================================
+
+function startWar() {
+    if (gameData.war.active) {
+        alert("Війна вже триває!");
+        return;
+    }
+
+    if (gameData.cities.length === 0) {
+        alert("Спочатку заснуй місто!");
+        return;
+    }
+
+    const confirmed = confirm(
+        "Розпочати військовий сценарій?\n" +
+        "Можливі економічні втрати та пошкодження інфраструктури."
+    );
+
+    if (!confirmed) return;
+
+    gameData.war.active = true;
+
+    addHistory("Розпочався військовий сценарій.");
+
+    updateWarPanel();
+    updateInterface();
+}
+
+function endWar() {
+    if (!gameData.war.active) return;
+
+    gameData.war.active = false;
+
+    addHistory(
+        "Військовий сценарій завершено. Починається відновлення."
+    );
+
+    updateWarPanel();
+    updateInterface();
+}
+
+function warEvent() {
+    if (!gameData.war.active) return;
+
+    if (gameData.cities.length === 0) return;
+
+    const city = gameData.cities[
+        Math.floor(Math.random() * gameData.cities.length)
+    ];
+
+    const event = Math.floor(Math.random() * 4);
+
+    if (event === 0) {
+        city.damaged = true;
+        city.happiness = Math.max(
+            0,
+            city.happiness - 8
+        );
+
+        addHistory(
+            "Місто " + city.name +
+            " зазнало пошкоджень. Потрібне відновлення."
+        );
+    }
+
+    if (event === 1 && city.bridges > 0) {
+        city.bridges--;
+
+        gameData.war.destroyedBridges++;
+
+        createPontoon(city);
+
+        addHistory(
+            "У місті " + city.name +
+            " пошкоджено міст. Створено тимчасову понтонну переправу."
+        );
+    }
+
+    if (event === 2) {
+        city.happiness = Math.max(
+            0,
+            city.happiness - 5
+        );
+
+        addHistory(
+            "У місті " + city.name +
+            " знизилася задоволеність населення."
+        );
+    }
+
+    if (event === 3) {
+        addHistory(
+            "У країні відбулася військова подія. " +
+            "Міста потребують підтримки."
+        );
+    }
+
+    updateWarPanel();
+    updateInterface();
+}
+
+// =====================================
+// ПОНТОННІ ПЕРЕПРАВИ
+// =====================================
+
+function createPontoon(city) {
+    const pontoon = {
+        id: Date.now() + Math.random(),
+        cityId: city.id,
+        name: "Понтонна переправа",
+        remaining: 20
+    };
+
+    gameData.pontoons.push(pontoon);
+
+    addHistory(
+        "Для міста " + city.name +
+        " створено тимчасову понтонну переправу."
+    );
+}
+
+function updatePontoons() {
+    gameData.pontoons.forEach(pontoon => {
+        pontoon.remaining--;
+    });
+
+    const expired = gameData.pontoons.filter(
+        pontoon => pontoon.remaining <= 0
+    );
+
+    expired.forEach(pontoon => {
+        const city = gameData.cities.find(
+            item => item.id === pontoon.cityId
+        );
+
+        if (city) {
+            addHistory(
+                "Тимчасова переправа міста " +
+                city.name + " більше не діє."
+            );
+        }
+    });
+
+    gameData.pontoons = gameData.pontoons.filter(
+        pontoon => pontoon.remaining > 0
+    );
+}
+
+// =====================================
+// ВІДНОВЛЕННЯ МІСТ
+// =====================================
+
+function repairCity() {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    if (!city.damaged) {
+        alert("Місто не потребує відновлення.");
+        return;
+    }
+
+    const price = 10000;
+
+    if (gameData.money < price) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    gameData.money -= price;
+    city.damaged = false;
+
+    city.happiness = Math.min(
+        100,
+        city.happiness + 10
+    );
+
+    addHistory(
+        "Місто " + city.name + " відновлено."
+    );
+
+    updateWarPanel();
+    updateInterface();
+}
+
+function supportCity() {
+    const city = getSelectedCity();
+
+    if (!city) return;
+
+    if (gameData.money < 5000) {
+        alert("Недостатньо гривень!");
+        return;
+    }
+
+    gameData.money -= 5000;
+
+    city.happiness = Math.min(
+        100,
+        city.happiness + 15
+    );
+
+    addHistory(
+        "Держава надала допомогу місту " + city.name
+    );
+
+    updateWarPanel();
+    updateInterface();
+}
+
+// =====================================
+// ПАНЕЛЬ ВІЙНИ
+// =====================================
+
+function updateWarPanel() {
+    const container =
+        document.getElementById("warContent");
+
+    if (!container) return;
+
+    let html = `
+        <p>Стан: ${
+            gameData.war.active
+                ? "Військовий сценарій"
+                : "Мирний час"
+        }</p>
+
+        <p>Пошкоджені мости: ${
+            gameData.war.destroyedBridges
+        }</p>
+
+        <p>Понтонні переправи: ${
+            gameData.pontoons.length
+        }</p>
+
+        <button onclick="startWar()">
+            Розпочати військовий сценарій
+        </button>
+
+        <button onclick="endWar()">
+            Завершити військовий сценарій
+        </button>
+
+        <button onclick="repairCity()">
+            Відновити обране місто
+        </button>
+
+        <button onclick="supportCity()">
+            Допомогти місту за 5 000 ₴
+        </button>
+    `;
+
+    gameData.cities.forEach(city => {
+        html += `
+            <div class="panel">
+                <b>${escapeHTML(city.name)}</b>
+                <p>Стан: ${
+                    city.damaged ? "Пошкоджене" : "Нормальний"
+                }</p>
+                <p>Задоволеність: ${city.happiness}%</p>
+                <button onclick="selectCity(${city.id})">
+                    Обрати місто
+                </button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// =====================================
+// АВТОМАТИЧНИЙ РОЗВИТОК
+// =====================================
+
+function economyTick() {
+    gameData.cities.forEach(city => {
+        if (city.damaged) {
+            return;
+        }
+
+        gameData.money += city.factories * 500;
+        gameData.money += city.farms * 100;
+    });
+
+    gameData.shops.forEach(shop => {
+        gameData.money += shop.income;
+    });
+
+    gameData.money = Math.max(
+        0,
+        Math.floor(gameData.money)
+    );
+}
+
+function consumeFood() {
+    const population = gameData.cities.reduce(
+        (sum, city) => sum + city.population,
+        0
+    ) + gameData.villages.reduce(
+        (sum, village) => sum + village.population,
+        0
+    );
+
+    const demand = Math.max(
+        1,
+        Math.floor(population / 1000)
+    );
+
+    gameData.resources.food -= demand;
+
+    if (gameData.resources.food < 0) {
+        gameData.resources.food = 0;
+
+        gameData.cities.forEach(city => {
+            city.happiness = Math.max(
+                0,
+                city.happiness - 2
+            );
+        });
+
+        addHistory("У країні виник дефіцит продовольства.");
+    }
+}
+
+function updateCityDevelopment() {
+    gameData.cities.forEach(city => {
+        if (city.damaged && gameData.war.active) {
+            city.population = Math.max(
+                0,
+                city.population - 1
+            );
+        }
+    });
+
+    populationGrowth();
+}
+
+// =====================================
+// ІГРОВИЙ ЧАС
+// =====================================
+
+function gameTick() {
+    if (!gameData.started) return;
+
+    gameData.tick++;
+
+    updateCityDevelopment();
+
+    extractResources();
+
+    economyTick();
+
+    if (gameData.tick % 10 === 0) {
+        consumeFood();
+    }
+
+    if (gameData.tick % 15 === 0) {
+        gameData.year++;
+
+        addHistory(
+            "Настав " + gameData.year + " рік."
+        );
+    }
+
+    if (gameData.tick % 8 === 0 && gameData.war.active) {
+        warEvent();
+    }
+
+    updatePontoons();
+
+    updateAllPanels();
+
+    updateLogistics();
+
+    updateWarPanel();
+
+    if (gameData.tick % 5 === 0) {
+        saveGame();
+    }
+}
+
+// =====================================
+// ЗБЕРЕЖЕННЯ ГРИ
+// =====================================
+
+function saveGame() {
+    try {
+        const data = JSON.stringify(gameData);
+
+        localStorage.setItem(
+            "moja_ukraina_save",
+            data
+        );
+
+        gameData.lastSave = Date.now();
+
+        return true;
+    } catch (error) {
+        console.error("Помилка збереження:", error);
+        return false;
+    }
+}
+
+function loadGame() {
+    try {
+        const saved = localStorage.getItem(
+            "moja_ukraina_save"
+        );
+
+        if (!saved) return false;
+
+        const data = JSON.parse(saved);
+
+        if (!data || typeof data !== "object") {
+            return false;
+        }
+
+        gameData.country = data.country || "";
+        gameData.year = Number(data.year) || 2016;
+        gameData.money = Number(data.money) || 0;
+        gameData.cities = Array.isArray(data.cities) ? data.cities : [];
+        gameData.villages = Array.isArray(data.villages) ? data.villages : [];
+        gameData.resources = data.resources || gameData.resources;
+        gameData.workers = Array.isArray(data.workers) ? data.workers : [];
+        gameData.shops = Array.isArray(data.shops) ? data.shops : [];
+        gameData.buildings = Array.isArray(data.buildings) ? data.buildings : [];
+        gameData.history = Array.isArray(data.history) ? data.history : [];
+        gameData.pontoons = Array.isArray(data.pontoons) ? data.pontoons : [];
+        gameData.war = data.war || gameData.war;
+        gameData.elections = data.elections || gameData.elections;
+        gameData.tick = Number(data.tick) || 0;
+        gameData.started = true;
+
+        gameData.cities.forEach(city => {
+            city.buildings = Array.isArray(city.buildings)
+                ? city.buildings : [];
+
+            city.factories = Number(city.factories) || 0;
+            city.farms = Number(city.farms) || 0;
+            city.bridges = Number(city.bridges) || 0;
+            city.roads = Number(city.roads) || 0;
+        });
+
+        return true;
+    } catch (error) {
+        console.error("Помилка завантаження:", error);
+        return false;
+    }
+}
+
+// =====================================
+// ВІДНОВЛЕННЯ КАРТИ
+// =====================================
+
+function restoreMapMarkers() {
+    gameData.cities.forEach(city => {
+        const marker = L.marker([city.lat, city.lng])
+            .addTo(map)
+            .bindPopup(
+                `<b>${escapeHTML(city.name)}</b><br>` +
+                `Населення: ${Math.floor(city.population)}`
+            );
+
+        mapMarkers.push(marker);
+    });
+
+    gameData.villages.forEach(village => {
+        const marker = L.circleMarker(
+            [village.lat, village.lng],
+            {
+                radius: 6,
+                color: "#267b39",
+                fillColor: "#72d77d",
+                fillOpacity: 1
+            }
+        )
+        .addTo(map)
+        .bindPopup(
+            `<b>${escapeHTML(village.name)}</b><br>` +
+            `Населення: ${Math.floor(village.population)}`
+        );
+
+        mapMarkers.push(marker);
+    });
+}
+
+// =====================================
+// ЗАПУСК ЗБЕРЕЖЕНОЇ ГРИ
+// =====================================
+
+function resumeGame() {
+    if (!loadGame()) return;
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    document.getElementById("countryTitle").textContent =
+        "🇺🇦 " + gameData.country;
+
+    initializeMap();
+    restoreMapMarkers();
+
+    if (gameData.cities.length > 0) {
+        selectCity(gameData.cities[0].id);
+
+        document.getElementById("mainCity").textContent =
+            "Головне місто: " + gameData.cities[0].name;
+    }
+
+    addHistory("Збережену гру відновлено.");
+
+    updateAllPanels();
+    updateWarPanel();
+    updateLogistics();
+
+    window.setInterval(gameTick, 3000);
+}
+
+// =====================================
+// ФІНАЛЬНА ІНІЦІАЛІЗАЦІЯ
+// =====================================
+
+const previousStartGame = startGame;
+
+startGame = function() {
+    previousStartGame();
+
+    if (gameData.started && map) {
+        updateAllPanels();
+        updateWarPanel();
+        updateLogistics();
+        saveGame();
+    }
+};
+
+window.addEventListener("beforeunload", saveGame);
+
+const continueButton = document.createElement("button");
+
+continueButton.textContent = "ПРОДОВЖИТИ ГРУ";
+
+continueButton.onclick = resumeGame;
+
+document.querySelector(".startBox").appendChild(continueButton);
+
+const resourceMarkers = [];
+
+function showResourceMarkers() {
+    if (!map) return;
+
+    resourceSites.forEach(site => {
+        const marker = L.circleMarker(
+            [site.lat, site.lng],
+            {
+                radius: 7,
+                color: "#805b12",
+                fillColor: "#f5c542",
+                fillOpacity: 0.9
+            }
+        ).addTo(map);
+
+        marker.bindPopup(
+            "⛏ " + escapeHTML(site.name) +
+            "<br>Ресурс: " + escapeHTML(site.type)
+        );
+
+        resourceMarkers.push(marker);
+    });
+}
+
+const originalInitializeMap = initializeMap;
+
+initializeMap = function() {
+    originalInitializeMap();
+
+    if (resourceMarkers.length === 0) {
+        showResourceMarkers();
+    }
+};
+
+// =====================================
+// КІНЕЦЬ ГРИ
+// =====================================
+
+</script>
+</body>
+</html>
+
+
