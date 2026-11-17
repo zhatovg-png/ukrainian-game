@@ -1,338 +1,167 @@
 
+
+<!-- ЧАСТИНА 1 — ОСНОВА КАРТИ ТА ФІКС МІНІКАРТИ -->
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Світ держав — 2016</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101923;color:#f1f5f9;font-family:Arial}
-header{padding:12px;background:#172b39;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-header h2{margin:0;font-size:19px}
-button{background:#2878b9;color:white;border:0;border-radius:7px;padding:10px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.4}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;height:calc(100vh - 58px)}
-.mapArea{position:relative;min-width:0;overflow:hidden;background:#79aeb0}
-#worldMap{width:100%;height:100%;display:block;touch-action:none;user-select:none}
-.sidebar{background:#172633;padding:12px;overflow:auto}
-.panel{background:#213442;padding:12px;border-radius:9px;margin-bottom:10px}
-.panel h3{margin:0 0 10px}
-.stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #405362;font-size:14px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
-.tabs button{font-size:12px;background:#344c5d}
-.tabs button.active{background:#2878b9}
-.tabContent{display:none}
-.tabContent.active{display:block}
-.item{background:#2c4353;padding:10px;margin:6px 0;border-radius:7px}
-input{width:100%;padding:11px;margin:6px 0;background:#12212c;color:white;border:1px solid #536b7b;border-radius:6px}
-label{font-size:13px}
-.small{font-size:12px;color:#b7c7d3;line-height:1.5}
-#setup{position:fixed;inset:0;background:#000d;z-index:10;display:flex;align-items:center;justify-content:center;padding:15px;overflow:auto}
-.setupBox{background:#203544;padding:20px;border-radius:12px;width:100%;max-width:430px;max-height:95vh;overflow:auto}
-.setupBox h2{margin-top:0}
-.mapMessage{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#172633ed;padding:10px;border-radius:8px;text-align:center;font-size:13px;z-index:2;width:max-content;max-width:90%;pointer-events:none}
-.legend{position:absolute;bottom:10px;left:10px;background:#172633ed;padding:9px;border-radius:8px;font-size:12px;line-height:1.8;pointer-events:none}
-.miniFrame{background:#132a35;padding:6px;border-radius:9px;margin:10px 0}
-#miniMap{width:100%;height:125px;display:block;border-radius:6px;touch-action:none}
-.cityPulse{animation:pulse 2.5s infinite}
-.smoke{animation:smoke 3s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
-@keyframes smoke{0%{opacity:.1;transform:translateY(3px)}50%{opacity:.6}100%{opacity:.1;transform:translateY(-5px)}}
-@media(max-width:800px){
-.layout{display:flex;flex-direction:column;height:auto}
-.mapArea{height:55vh;min-height:350px}
-.sidebar{overflow:visible}
-}
+header{padding:13px;background:#1b2b3b;border-bottom:1px solid #40566a}
+h2,h3{margin:5px 0 12px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;padding:12px}
+.panel{background:#1b2b3b;border:1px solid #40566a;border-radius:12px;padding:10px;min-width:0}
+.map-wrap{width:100%;overflow:hidden;border-radius:9px}
+#worldMap{display:block;width:100%;height:auto;touch-action:pan-y}
+#miniMap,#setupMiniMap{display:block;width:100%;height:auto;border:1px solid #71869a;border-radius:8px;background:#6e9c9d;touch-action:none;cursor:crosshair}
+.mini-hint{font-size:12px;color:#bdcbd5;line-height:1.4}
+.stat{padding:9px;margin:6px 0;background:#263b4d;border-radius:7px}
+input{display:block;width:100%;padding:12px;margin:6px 0 13px;background:#101c28;color:white;border:1px solid #52677b;border-radius:8px;font-size:16px}
+button{width:100%;padding:12px;background:#2876a8;color:white;border:0;border-radius:9px;font-weight:bold;font-size:15px}
+#setupModal{position:fixed;inset:0;z-index:10000;background:#07111ded;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal-card{width:min(500px,100%);max-height:95vh;overflow:auto;background:#1b2d3e;border:1px solid #607b91;border-radius:15px;padding:16px}
+#foundingMessage{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:11000;background:#1d2d3c;color:white;padding:12px 18px;border:1px solid #71869a;border-radius:12px;font-weight:bold;max-width:90%;text-align:center;display:none}
+.country-territory,.country-label{pointer-events:none}
+.map-resource{cursor:help}
+@media(max-width:750px){.main{grid-template-columns:1fr}}
 </style>
 </head>
+
 <body>
 
 <header>
-<h2>🌍 Світ держав — 2016</h2>
-<div>
-<button id="pauseBtn">⏸ Пауза</button>
-<button id="saveBtn">💾 Зберегти</button>
-</div>
+  <h2>🌍 Світ держав</h2>
+  <div>📅 2016 рік · 💰 ₴</div>
 </header>
 
-<div class="layout">
-<div class="mapArea">
-<div class="mapMessage" id="mapMessage">Обери місце для заснування держави</div>
+<div class="main">
+<section class="panel">
+  <h3>🗺️ Велика карта світу</h3>
+  <div class="map-wrap">
+  <svg id="worldMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ocean" x2="0" y2="1">
+        <stop stop-color="#85b9b5"/>
+        <stop offset="1" stop-color="#426f7b"/>
+      </linearGradient>
+      <pattern id="forest" width="24" height="24" patternUnits="userSpaceOnUse">
+        <path d="M12 2L3 20H21Z" fill="#285b42" opacity=".55"/>
+      </pattern>
+    </defs>
 
-<svg id="worldMap" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet">
-<defs>
-<pattern id="grass" width="35" height="35" patternUnits="userSpaceOnUse">
-<path d="M5 20l4 -5 M20 30l4 -6 M28 8l3 -4" stroke="#799b65" stroke-width="2" opacity=".35"/>
-</pattern>
-<pattern id="water" width="55" height="35" patternUnits="userSpaceOnUse">
-<path d="M0 12 Q14 3 28 12 T56 12 M-15 28 Q0 19 15 28 T45 28" fill="none" stroke="#9bd0d5" stroke-width="2" opacity=".35"/>
-</pattern>
-</defs>
+    <rect width="1000" height="700" fill="url(#ocean)"/>
 
-<rect width="1200" height="800" fill="#6ca6b0"/>
-<rect width="1200" height="800" fill="url(#water)"/>
+    <g fill="#a7b483" stroke="#e0d5a4" stroke-width="5">
+      <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+      <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+      <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+      <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+    </g>
 
-<!-- ОКЕАНСЬКІ ОСТРОВИ -->
-<path d="M30 95 Q80 60 125 88 Q160 115 130 155 Q80 175 35 145Z" fill="#a5b987" stroke="#597b62" stroke-width="4"/>
-<path d="M1070 650 Q1120 615 1170 650 Q1190 690 1150 720 Q1090 730 1070 690Z" fill="#a5b987" stroke="#597b62" stroke-width="4"/>
+    <g fill="#777d72" stroke="#e4dfc8" stroke-width="2">
+      <path d="M120 180L150 115 180 180Z"/>
+      <path d="M155 190L190 120 225 190Z"/>
+      <path d="M425 145L465 75 505 145Z"/>
+      <path d="M465 155L510 85 550 155Z"/>
+      <path d="M550 320L590 245 630 320Z"/>
+      <path d="M300 550L340 470 380 550Z"/>
+      <path d="M810 400L850 325 890 400Z"/>
+    </g>
 
-<!-- МАТЕРИК -->
-<path d="M105 230
-Q120 165 205 140
-L290 100 365 120 430 75
-Q500 45 565 90
-L650 65 720 100 810 80
-Q900 100 950 145
-L1070 160 1120 235
-Q1090 290 1145 355
-L1100 420 1130 500
-Q1090 580 1010 610
-L950 690 850 715
-L770 680 690 735
-L580 700 510 750
-L405 690 310 720
-L220 665 150 585
-L100 500 125 420 80 340Z"
-fill="#b6c99a" stroke="#456d59" stroke-width="9"/>
+    <g fill="url(#forest)">
+      <path d="M80 250Q150 205 220 250L250 330Q170 370 100 330Z"/>
+      <path d="M450 190Q520 160 590 200L610 260Q540 290 470 255Z"/>
+      <path d="M780 420Q835 380 900 425L900 465Q830 490 785 460Z"/>
+    </g>
 
-<path d="M105 230
-Q120 165 205 140 L290 100 365 120 430 75
-Q500 45 565 90 L650 65 720 100 810 80
-Q900 100 950 145 L1070 160 1120 235
-L1100 420 1130 500 Q1090 580 1010 610
-L950 690 850 715 770 680 690 735
-L580 700 510 750 405 690 310 720
-L220 665 150 585 100 500 125 420 80 340Z"
-fill="url(#grass)" opacity=".8"/>
+    <g fill="none" stroke="#6cc4d1" stroke-width="5" stroke-linecap="round">
+      <path d="M185 120Q220 190 195 255T240 390"/>
+      <path d="M490 100Q470 180 520 220T555 350"/>
+      <path d="M830 300Q800 360 850 420"/>
+      <path d="M340 460Q380 510 350 600"/>
+    </g>
 
-<!-- РІВНИНИ -->
-<path d="M160 245 Q300 180 410 220 Q510 180 600 250 Q530 330 390 340 Q250 320 160 245Z" fill="#c5cf91" opacity=".75"/>
-<path d="M650 150 Q790 115 930 185 L1040 260 Q930 335 800 300 Q700 270 650 150Z" fill="#d2c88e" opacity=".7"/>
-<path d="M250 490 Q380 420 500 470 Q610 440 690 520 Q610 610 470 620 Q330 600 250 490Z" fill="#d2c58b" opacity=".65"/>
-<path d="M720 490 Q850 420 1010 500 L980 620 850 675 730 620Z" fill="#a7bf85" opacity=".8"/>
+    <g fill="#4c9eaf" stroke="#b4dce0" stroke-width="3">
+      <ellipse cx="270" cy="210" rx="22" ry="12"/>
+      <ellipse cx="600" cy="190" rx="28" ry="14"/>
+      <ellipse cx="400" cy="570" rx="25" ry="15"/>
+      <ellipse cx="865" cy="350" rx="20" ry="12"/>
+    </g>
 
-<!-- ГІРСЬКІ ХРЕБТИ -->
-<g fill="#777e78" stroke="#59645e" stroke-width="3">
-<path d="M400 180l35 -85 35 85 35 -105 40 105 35 -75 40 75Z"/>
-<path d="M800 390l35 -90 35 90 35 -110 45 110 35 -75 40 75Z"/>
-<path d="M390 610l35 -95 40 95 35 -115 45 115 35 -75 35 75Z"/>
-</g>
-<g fill="#f1eee2">
-<path d="M423 135l12 -40 15 40 -13 -8Z M493 130l12 -55 15 55 -14 -12Z M562 140l13 -35 13 35 -13 -8Z"/>
-<path d="M823 345l12 -45 15 45 -13 -9Z M905 335l15 -55 17 55 -16 -10Z M990 350l12 -35 14 35 -12 -8Z"/>
-<path d="M415 570l12 -55 17 55 -15 -10Z M500 555l15 -60 18 60 -16 -10Z M575 580l12 -45 15 45 -13 -9Z"/>
-</g>
+    <g fill="none" stroke="#d4bd8b" stroke-width="3" stroke-dasharray="7 5">
+      <path d="M170 300Q280 230 440 220"/>
+      <path d="M440 220Q560 180 650 220"/>
+      <path d="M650 220Q750 300 840 370"/>
+      <path d="M300 460Q370 420 440 350"/>
+    </g>
 
-<!-- ЛІСОВІ МАСИВИ -->
-<g fill="#376d48" stroke="#285b3c" stroke-width="2">
-<circle cx="205" cy="360" r="23"/><circle cx="240" cy="375" r="25"/><circle cx="275" cy="350" r="22"/>
-<circle cx="700" cy="200" r="24"/><circle cx="735" cy="220" r="25"/><circle cx="775" cy="195" r="23"/>
-<circle cx="870" cy="550" r="24"/><circle cx="910" cy="570" r="25"/><circle cx="950" cy="540" r="22"/>
-<circle cx="300" cy="570" r="23"/><circle cx="335" cy="590" r="25"/><circle cx="370" cy="565" r="22"/>
-</g>
-<g fill="#60945b">
-<circle cx="205" cy="352" r="12"/><circle cx="240" cy="367" r="13"/><circle cx="275" cy="343" r="12"/>
-<circle cx="700" cy="192" r="13"/><circle cx="735" cy="212" r="13"/><circle cx="775" cy="187" r="12"/>
-<circle cx="870" cy="542" r="13"/><circle cx="910" cy="562" r="13"/><circle cx="950" cy="532" r="12"/>
-</g>
-
-<!-- РІЧКИ -->
-<g fill="none" stroke-linecap="round">
-<path d="M120 400 Q230 365 320 410 T520 420 T720 390 T950 430 T1110 410" stroke="#397f9f" stroke-width="19"/>
-<path d="M120 400 Q230 365 320 410 T520 420 T720 390 T950 430 T1110 410" stroke="#a2d8e3" stroke-width="8"/>
-<path d="M450 95 Q430 190 500 270 T570 420 T650 560 T710 700" stroke="#397f9f" stroke-width="16"/>
-<path d="M450 95 Q430 190 500 270 T570 420 T650 560 T710 700" stroke="#a2d8e3" stroke-width="6"/>
-</g>
-
-<!-- ОЗЕРА -->
-<g fill="#529cb5" stroke="#397b96" stroke-width="4">
-<ellipse cx="290" cy="180" rx="43" ry="24"/>
-<ellipse cx="680" cy="470" rx="50" ry="30"/>
-<ellipse cx="1010" cy="570" rx="38" ry="24"/>
-</g>
-<g fill="none" stroke="#a8dbe0" stroke-width="3">
-<path d="M260 180q20 -12 40 0t40 0"/>
-<path d="M640 470q25 -14 50 0t45 0"/>
-</g>
-
-<!-- ДОРОГИ МІЖ ПОЧАТКОВИМИ ПОСЕЛЕННЯМИ -->
-<g fill="none" stroke-linecap="round">
-<path d="M225 270 Q300 235 365 270 T500 250 T700 270 T920 280" stroke="#887452" stroke-width="11"/>
-<path d="M225 270 Q300 235 365 270 T500 250 T700 270 T920 280" stroke="#e5d5aa" stroke-width="5" stroke-dasharray="10 9"/>
-<path d="M260 450 Q380 420 500 480 T740 530 T930 550" stroke="#887452" stroke-width="11"/>
-<path d="M260 450 Q380 420 500 480 T740 530 T930 550" stroke="#e5d5aa" stroke-width="5" stroke-dasharray="10 9"/>
-</g>
-
-<!-- ПОСЕЛЕННЯ: МІСТА -->
-<g id="settlements">
-<g transform="translate(240 260)">
-<circle r="35" fill="#7b9c83" opacity=".4"/>
-<path d="M-25 10v-20l13 -12 13 12v20Z M0 10v-26l15 -13 15 13v26Z" fill="#b9a18a" stroke="#594d43" stroke-width="3"/>
-<path d="M-25 -10l13 -12 13 12 M0 -16l15 -13 15 13" fill="none" stroke="#704e43" stroke-width="5"/>
-<rect x="-4" y="-2" width="8" height="12" fill="#594d43"/>
-<circle class="cityPulse" r="42" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-<g transform="translate(500 240)">
-<circle r="38" fill="#7b9c83" opacity=".4"/>
-<path d="M-30 12v-24l15 -14 15 14v24Z M5 12v-30l16 -15 16 15v30Z" fill="#c7aa87" stroke="#594d43" stroke-width="3"/>
-<path d="M-30 -12l15 -14 15 14 M5 -18l16 -15 16 15" fill="none" stroke="#805448" stroke-width="5"/>
-<rect x="14" y="-4" width="8" height="16" fill="#594d43"/>
-<circle class="cityPulse" r="45" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-<g transform="translate(740 275)">
-<circle r="36" fill="#7b9c83" opacity=".4"/>
-<path d="M-28 12v-23l14 -13 14 13v23Z M5 12v-28l15 -13 15 13v28Z" fill="#c1a18a" stroke="#594d43" stroke-width="3"/>
-<path d="M-28 -11l14 -13 14 13 M5 -16l15 -13 15 13" fill="none" stroke="#805448" stroke-width="5"/>
-<circle class="cityPulse" r="43" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-<g transform="translate(930 290)">
-<circle r="35" fill="#7b9c83" opacity=".4"/>
-<path d="M-27 10v-20l13 -12 13 12v20Z M5 10v-25l14 -12 14 12v25Z" fill="#c9ad8a" stroke="#594d43" stroke-width="3"/>
-<path d="M-27 -10l13 -12 13 12 M5 -15l14 -12 14 12" fill="none" stroke="#805448" stroke-width="5"/>
-<circle class="cityPulse" r="42" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-<g transform="translate(380 510)">
-<circle r="35" fill="#7b9c83" opacity=".4"/>
-<path d="M-25 10v-20l13 -12 13 12v20Z M5 10v-25l14 -12 14 12v25Z" fill="#c9ad8a" stroke="#594d43" stroke-width="3"/>
-<path d="M-25 -10l13 -12 13 12 M5 -15l14 -12 14 12" fill="none" stroke="#805448" stroke-width="5"/>
-<circle class="cityPulse" r="42" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-<g transform="translate(760 560)">
-<circle r="35" fill="#7b9c83" opacity=".4"/>
-<path d="M-25 10v-20l13 -12 13 12v20Z M5 10v-25l14 -12 14 12v25Z" fill="#c9ad8a" stroke="#594d43" stroke-width="3"/>
-<path d="M-25 -10l13 -12 13 12 M5 -15l14 -12 14 12" fill="none" stroke="#805448" stroke-width="5"/>
-<circle class="cityPulse" r="42" fill="none" stroke="#f7e6a5" stroke-width="3"/>
-</g>
-</g>
-
-<!-- СЕЛА -->
-<g fill="#c9a77e" stroke="#695744" stroke-width="2">
-<path d="M155 310l12 -12 12 12v13h-24Z"/>
-<path d="M185 330l12 -12 12 12v13h-24Z"/>
-<path d="M620 310l12 -12 12 12v13h-24Z"/>
-<path d="M650 325l12 -12 12 12v13h-24Z"/>
-<path d="M1010 480l12 -12 12 12v13h-24Z"/>
-<path d="M1040 495l12 -12 12 12v13h-24Z"/>
-</g>
-
-<!-- ПОЛЯ -->
-<g fill="none" stroke="#b68e55" stroke-width="4" opacity=".8">
-<path d="M140 330l40 -18m-35 30l40 -18m-35 30l40 -18"/>
-<path d="M550 570l45 -18m-40 30l45 -18m-40 30l45 -18"/>
-<path d="M950 350l45 -18m-40 30l45 -18m-40 30l45 -18"/>
-</g>
-
-<!-- ДИМ НАД МІСТАМИ -->
-<g class="smoke" fill="#e8eee5" opacity=".5">
-<circle cx="230" cy="230" r="5"/><circle cx="240" cy="220" r="4"/>
-<circle cx="490" cy="210" r="5"/><circle cx="500" cy="198" r="4"/>
-<circle cx="730" cy="245" r="5"/><circle cx="740" cy="233" r="4"/>
-</g>
-
-<!-- НАЗВИ -->
-<g font-family="Arial" font-weight="bold" fill="#263c32" stroke="#dbe3c8" stroke-width="3" paint-order="stroke" text-anchor="middle">
-<text x="240" y="205" font-size="19">Елмар</text>
-<text x="500" y="185" font-size="19">Велград</text>
-<text x="740" y="220" font-size="19">Лісбург</text>
-<text x="930" y="235" font-size="19">Солар</text>
-<text x="380" y="455" font-size="19">Міран</text>
-<text x="760" y="505" font-size="19">Орград</text>
-</g>
-
-<g fill="#315f7c" font-size="21" font-style="italic">
-<text x="70" y="65">Західне море</text>
-<text x="890" y="765">Південний океан</text>
-</g>
-
-<text x="600" y="775" text-anchor="middle" font-size="26" font-weight="bold" fill="#385743">МАТЕРИК ЕЛЬДАР</text>
-
-<g id="mapMarkers"></g>
-<g id="mapLabels"></g>
-</svg>
-
-<div class="legend">
-🌲 Ліси · ⛰ Гори<br>
-🌊 Річки · 🏙 Міста<br>
-🏡 Села · 🛣 Дороги
-</div>
-</div>
-
-<aside class="sidebar">
-<div class="panel">
-<h3 id="countryTitle">Нова держава</h3>
-<div class="stat"><span>Дата</span><b id="date">01.01.2016</b></div>
-<div class="stat"><span>Бюджет</span><b id="money">₴ 0</b></div>
-<div class="stat"><span>Населення</span><b id="population">0</b></div>
-<div class="stat"><span>Щастя</span><b id="happiness">0%</b></div>
-<div class="stat"><span>Міста</span><b id="cityCount">0</b></div>
-<div class="stat"><span>Села</span><b id="villageCount">0</b></div>
-</div>
-
-<div class="tabs">
-<button class="active" data-tab="overview">Огляд</button>
-<button data-tab="cities">Міста і села</button>
-<button data-tab="buildings">Будівлі</button>
-<button data-tab="economy">Економіка</button>
-<button data-tab="resourcesTab">Ресурси</button>
-<button data-tab="trade">Торгівля</button>
-<button data-tab="people">Населення</button>
-<button data-tab="jobs">Робота</button>
-<button data-tab="politics">Вибори</button>
-<button data-tab="countries">Країни</button>
-<button data-tab="wars">Війни</button>
-<button data-tab="transport">Транспорт</button>
-</div>
-
-<section id="overview" class="tabContent active">
-<div class="panel"><h3>Інформація</h3><div id="selectedInfo">Заснуй державу.</div></div>
-<div class="panel"><h3>Історія</h3><div id="eventLog">2016 рік. Світ очікує на нову державу.</div></div>
+    <g id="roads"></g>
+    <g id="territories"></g>
+    <g id="resources"></g>
+    <g id="settlements"></g>
+    <g id="mapLabels"></g>
+    <g id="mapMarkers"></g>
+  </svg>
+  </div>
+  <p class="mini-hint">Натисни на карту, щоб вибрати місце для своєї держави.</p>
 </section>
-<section id="cities" class="tabContent"><div class="panel"><h3>Міста і села</h3><div id="citiesList"></div></div></section>
-<section id="buildings" class="tabContent"><div class="panel"><h3>Будівлі</h3><div id="buildingsList"></div></div></section>
-<section id="economy" class="tabContent"><div class="panel"><h3>Економіка</h3><div id="economyList"></div></div></section>
-<section id="resourcesTab" class="tabContent"><div class="panel"><h3>Ресурси</h3><div id="resourcesList"></div></div></section>
-<section id="trade" class="tabContent"><div class="panel"><h3>Торгівля</h3><div id="tradeList"></div></div></section>
-<section id="people" class="tabContent"><div class="panel"><h3>Населення</h3><div id="peopleList"></div></div></section>
-<section id="jobs" class="tabContent"><div class="panel"><h3>Робота</h3><div id="jobsList"></div></div></section>
-<section id="politics" class="tabContent"><div class="panel"><h3>Вибори</h3><div id="politicsList"></div></div></section>
-<section id="countries" class="tabContent"><div class="panel"><h3>Інші держави</h3><div id="countriesList"></div></div></section>
-<section id="wars" class="tabContent"><div class="panel"><h3>Війни</h3><div id="warsList"></div></div></section>
-<section id="transport" class="tabContent"><div class="panel"><h3>Транспорт</h3><div id="transportList"></div></div></section>
+
+<aside class="panel">
+  <h3>🔎 Мінікарта</h3>
+  <svg id="miniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1000" height="700" fill="#6e9c9d"/>
+    <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+      <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+      <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+      <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+      <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+    </g>
+    <g id="miniMarker"></g>
+  </svg>
+  <p class="mini-hint">Торкнися будь-якого місця мінікарти, щоб поставити мітку.</p>
+
+  <div class="stat">🏳️ Держава: <b id="countryDisplay">Не створена</b></div>
+  <div class="stat">📅 Рік: <b id="yearDisplay">2016</b></div>
+  <div class="stat">👥 Населення: <b id="populationDisplay">0</b></div>
+  <div class="stat">💰 Казна: <b id="treasuryDisplay">0 ₴</b></div>
+  <div class="stat">🌾 Їжа: <b id="foodDisplay">0</b></div>
+  <div class="stat">🪵 Дерево: <b id="woodDisplay">0</b></div>
+  <div class="stat">🪨 Камінь: <b id="stoneDisplay">0</b></div>
+  <div class="stat">⛓ Залізо: <b id="ironDisplay">0</b></div>
 </aside>
 </div>
 
-<div id="setup">
-<div class="setupBox">
-<h2>🏛 Заснування держави</h2>
-<p>Обери місце на великому материку.</p>
-<label>Назва держави</label>
-<input id="countryName" maxlength="35" placeholder="Назва держави">
-<label>Назва столиці</label>
-<input id="capitalName" maxlength="35" placeholder="Назва столиці">
-<p id="chosenPlace" class="small">Місце не обране.</p>
+<div id="setupModal">
+  <div class="modal-card">
+    <h2>🏛 Заснування держави</h2>
+    <label>Назва держави</label>
+    <input id="countryName" placeholder="Назва держави">
+    <label>Назва столиці</label>
+    <input id="capitalName" placeholder="Назва столиці">
+    <p>Обери місце на мінікарті:</p>
 
-<div class="miniFrame">
-<svg id="miniMap" viewBox="0 0 1200 800">
-<rect width="1200" height="800" fill="#6ca6b0"/>
-<path d="M105 230 Q120 165 205 140 L290 100 365 120 430 75 Q500 45 565 90 L650 65 720 100 810 80 Q900 100 950 145 L1070 160 1120 235 1100 420 1130 500 Q1090 580 1010 610 L950 690 850 715 770 680 690 735 580 700 510 750 405 690 310 720 220 665 150 585 100 500 125 420 80 340Z" fill="#b6c99a" stroke="#456d59" stroke-width="12"/>
-<path d="M120 400 Q230 365 320 410 T520 420 T720 390 T950 430 T1110 410" fill="none" stroke="#397f9f" stroke-width="22"/>
-<g fill="#376d48">
-<circle cx="240" cy="260" r="40"/><circle cx="500" cy="240" r="40"/><circle cx="740" cy="275" r="40"/><circle cx="930" cy="290" r="40"/>
-</g>
-<g id="miniMarker"></g>
-</svg>
-<div class="small" style="text-align:center">Мінікарта світу</div>
-</div>
+    <svg id="setupMiniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1000" height="700" fill="#6e9c9d"/>
+      <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+        <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+        <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+        <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+        <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+      </g>
+      <g id="setupMiniMarker"></g>
+    </svg>
 
-<button id="foundBtn" disabled style="width:100%">Заснувати державу</button>
-<p class="small">Натисни на велику карту, щоб поставити мітку. Її можна перетягувати пальцем.</p>
-</div>
+    <p class="mini-hint">Мітку можна змінювати натисканням на карту або мінікарту.</p>
+    <button id="foundBtn">Заснувати державу</button>
+  </div>
 </div>
 
 <script>
-// ЧАСТИНА 1 — КАРТА ТА ОСНОВА
-
 const worldMap = document.getElementById("worldMap");
 const markerLayer = document.getElementById("mapMarkers");
 const miniMarker = document.getElementById("miniMarker");
@@ -342,93 +171,112 @@ let markerElement = null;
 let draggingMarker = false;
 let gameStarted = false;
 
-function getMapCoordinates(event){
- const point = worldMap.createSVGPoint();
- point.x = event.clientX;
- point.y = event.clientY;
- const matrix = worldMap.getScreenCTM();
- if(!matrix) return null;
- return point.matrixTransform(matrix.inverse());
+window.selectedLocation = null;
+window.gameStarted = false;
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function getMapCoordinates(element,event){
+  const rect=element.getBoundingClientRect();
+  const view=element.viewBox.baseVal;
+
+  if(!rect.width||!rect.height)return null;
+
+  const x=(event.clientX-rect.left)/rect.width*view.width;
+  const y=(event.clientY-rect.top)/rect.height*view.height;
+
+  return {
+    x:Math.max(0,Math.min(view.width,x)),
+    y:Math.max(0,Math.min(view.height,y))
+  };
 }
 
 function updateMarkerPosition(x,y){
- x=Math.max(10,Math.min(1190,x));
- y=Math.max(10,Math.min(790,y));
+  selectedLocation={x,y};
+  window.selectedLocation={x,y};
 
- markerElement.setAttribute("transform",`translate(${x},${y})`);
- selectedLocation={x:Math.round(x),y:Math.round(y)};
+  if(!markerElement){
+    markerElement=document.createElementNS(SVG_NS,"g");
+    markerElement.setAttribute("class","selected-map-marker");
+    markerElement.setAttribute("pointer-events","none");
 
- document.getElementById("chosenPlace").textContent=
- "Обране місце: "+selectedLocation.x+", "+selectedLocation.y;
+    const pin=document.createElementNS(SVG_NS,"path");
+    pin.setAttribute("d","M0 8 L-10 27 L10 27 Z");
+    pin.setAttribute("fill","#ff4138");
+    pin.setAttribute("stroke","#fff");
+    pin.setAttribute("stroke-width","3");
 
- document.getElementById("foundBtn").disabled=false;
+    const outer=document.createElementNS(SVG_NS,"circle");
+    outer.setAttribute("r","17");
+    outer.setAttribute("fill","#ff4138");
+    outer.setAttribute("fill-opacity",".35");
+    outer.setAttribute("stroke","#fff");
+    outer.setAttribute("stroke-width","3");
 
- document.getElementById("mapMessage").textContent=
- "Мітку встановлено!";
+    const inner=document.createElementNS(SVG_NS,"circle");
+    inner.setAttribute("r","6");
+    inner.setAttribute("fill","#ff4138");
+    inner.setAttribute("stroke","#fff");
+    inner.setAttribute("stroke-width","2");
 
- miniMarker.innerHTML=
- '<circle cx="'+x+'" cy="'+y+'" r="27" fill="#e53935" stroke="white" stroke-width="10"/>';
+    markerElement.append(pin,outer,inner);
+    markerLayer.appendChild(markerElement);
+  }
+
+  markerElement.setAttribute("transform",`translate(${x} ${y})`);
+
+  const markerHTML=`
+    <circle cx="${x}" cy="${y}" r="25"
+      fill="#ff4138" fill-opacity=".3"
+      stroke="#fff" stroke-width="7"/>
+    <circle cx="${x}" cy="${y}" r="10"
+      fill="#ff4138" stroke="#fff" stroke-width="5"/>
+  `;
+
+  if(miniMarker)miniMarker.innerHTML=markerHTML;
+
+  const setupMarker=document.getElementById("setupMiniMarker");
+  if(setupMarker)setupMarker.innerHTML=markerHTML;
 }
 
 function createMapMarker(x,y){
- if(markerElement) markerElement.remove();
-
- markerElement=document.createElementNS("http://www.w3.org/2000/svg","g");
-
- const outer=document.createElementNS("http://www.w3.org/2000/svg","circle");
- outer.setAttribute("r","16");
- outer.setAttribute("fill","#e53935");
- outer.setAttribute("stroke","white");
- outer.setAttribute("stroke-width","4");
-
- const inner=document.createElementNS("http://www.w3.org/2000/svg","circle");
- inner.setAttribute("r","5");
- inner.setAttribute("fill","white");
-
- markerElement.append(outer,inner);
- markerLayer.appendChild(markerElement);
-
- markerElement.addEventListener("pointerdown",function(event){
-  event.preventDefault();
-  event.stopPropagation();
-  draggingMarker=true;
-  markerElement.setPointerCapture(event.pointerId);
- });
-
- markerElement.addEventListener("pointermove",function(event){
-  if(!draggingMarker)return;
-  const point=getMapCoordinates(event);
-  if(point)updateMarkerPosition(point.x,point.y);
- });
-
- markerElement.addEventListener("pointerup",function(){
-  draggingMarker=false;
- });
-
- markerElement.addEventListener("pointercancel",function(){
-  draggingMarker=false;
- });
-
- updateMarkerPosition(x,y);
+  updateMarkerPosition(x,y);
 }
 
-worldMap.addEventListener("pointerdown",function(event){
- if(gameStarted)return;
- if(event.target.closest("#mapMarkers"))return;
- const point=getMapCoordinates(event);
- if(point)createMapMarker(point.x,point.y);
+function selectMapPoint(element,event){
+  event.preventDefault();
+  const point=getMapCoordinates(element,event);
+  if(!point)return;
+  createMapMarker(point.x,point.y);
+}
+
+worldMap.addEventListener("pointerdown",event=>{
+  if(event.target.closest(".map-resource"))return;
+  selectMapPoint(worldMap,event);
 });
 
-document.querySelectorAll(".tabs button").forEach(button=>{
- button.addEventListener("click",()=>{
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".tabContent").forEach(s=>s.classList.remove("active"));
-  button.classList.add("active");
-  document.getElementById(button.dataset.tab).classList.add("active");
- });
+document.getElementById("miniMap").addEventListener("pointerdown",event=>{
+  selectMapPoint(event.currentTarget,event);
 });
 
-// КІНЕЦЬ ЧАСТИНИ 1
+document.getElementById("setupMiniMap").addEventListener("pointerdown",event=>{
+  selectMapPoint(event.currentTarget,event);
+});
+
+function showMessage(message){
+  let box=document.getElementById("foundingMessage");
+  if(!box){
+    box=document.createElement("div");
+    box.id="foundingMessage";
+    document.body.appendChild(box);
+  }
+  box.textContent=message;
+  box.style.display="block";
+  clearTimeout(window.foundingMessageTimer);
+  window.foundingMessageTimer=setTimeout(()=>box.style.display="none",3000);
+}
+
+console.log("Частина 1 завантажена");
 </script>
 </body>
 </html>
