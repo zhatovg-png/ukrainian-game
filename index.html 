@@ -1,6 +1,5 @@
 
-
-<!-- ЧАСТИНА 1 — ОСНОВА КАРТИ ТА ФІКС МІНІКАРТИ -->
+<!-- ЧАСТИНА 1 — ОСНОВА КАРТИ ТА ВИПРАВЛЕННЯ -->
 
 <!DOCTYPE html>
 <html lang="uk">
@@ -22,7 +21,8 @@ h2,h3{margin:5px 0 12px}
 .mini-hint{font-size:12px;color:#bdcbd5;line-height:1.4}
 .stat{padding:9px;margin:6px 0;background:#263b4d;border-radius:7px}
 input{display:block;width:100%;padding:12px;margin:6px 0 13px;background:#101c28;color:white;border:1px solid #52677b;border-radius:8px;font-size:16px}
-button{width:100%;padding:12px;background:#2876a8;color:white;border:0;border-radius:9px;font-weight:bold;font-size:15px}
+button{width:100%;padding:12px;background:#2876a8;color:white;border:0;border-radius:9px;font-weight:bold;font-size:15px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
 #setupModal{position:fixed;inset:0;z-index:10000;background:#07111ded;display:flex;align-items:center;justify-content:center;padding:14px}
 .modal-card{width:min(500px,100%);max-height:95vh;overflow:auto;background:#1b2d3e;border:1px solid #607b91;border-radius:15px;padding:16px}
 #foundingMessage{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:11000;background:#1d2d3c;color:white;padding:12px 18px;border:1px solid #71869a;border-radius:12px;font-weight:bold;max-width:90%;text-align:center;display:none}
@@ -33,132 +33,131 @@ button{width:100%;padding:12px;background:#2876a8;color:white;border:0;border-ra
 </head>
 
 <body>
-
 <header>
-  <h2>🌍 Світ держав</h2>
-  <div>📅 2016 рік · 💰 ₴</div>
+<h2>🌍 Світ держав</h2>
+<div>📅 2016 рік · 💰 ₴</div>
 </header>
 
 <div class="main">
 <section class="panel">
-  <h3>🗺️ Велика карта світу</h3>
-  <div class="map-wrap">
-  <svg id="worldMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="ocean" x2="0" y2="1">
-        <stop stop-color="#85b9b5"/>
-        <stop offset="1" stop-color="#426f7b"/>
-      </linearGradient>
-      <pattern id="forest" width="24" height="24" patternUnits="userSpaceOnUse">
-        <path d="M12 2L3 20H21Z" fill="#285b42" opacity=".55"/>
-      </pattern>
-    </defs>
+<h3>🗺️ Велика карта світу</h3>
+<div class="map-wrap">
+<svg id="worldMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="ocean" x2="0" y2="1">
+<stop stop-color="#85b9b5"/>
+<stop offset="1" stop-color="#426f7b"/>
+</linearGradient>
+<pattern id="forest" width="24" height="24" patternUnits="userSpaceOnUse">
+<path d="M12 2L3 20H21Z" fill="#285b42" opacity=".55"/>
+</pattern>
+</defs>
 
-    <rect width="1000" height="700" fill="url(#ocean)"/>
+<rect width="1000" height="700" fill="url(#ocean)"/>
 
-    <g fill="#a7b483" stroke="#e0d5a4" stroke-width="5">
-      <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-      <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-      <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-      <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-    </g>
+<g fill="#a7b483" stroke="#e0d5a4" stroke-width="5">
+<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+</g>
 
-    <g fill="#777d72" stroke="#e4dfc8" stroke-width="2">
-      <path d="M120 180L150 115 180 180Z"/>
-      <path d="M155 190L190 120 225 190Z"/>
-      <path d="M425 145L465 75 505 145Z"/>
-      <path d="M465 155L510 85 550 155Z"/>
-      <path d="M550 320L590 245 630 320Z"/>
-      <path d="M300 550L340 470 380 550Z"/>
-      <path d="M810 400L850 325 890 400Z"/>
-    </g>
+<g fill="#777d72" stroke="#e4dfc8" stroke-width="2">
+<path d="M120 180L150 115 180 180Z"/>
+<path d="M155 190L190 120 225 190Z"/>
+<path d="M425 145L465 75 505 145Z"/>
+<path d="M465 155L510 85 550 155Z"/>
+<path d="M550 320L590 245 630 320Z"/>
+<path d="M300 550L340 470 380 550Z"/>
+<path d="M810 400L850 325 890 400Z"/>
+</g>
 
-    <g fill="url(#forest)">
-      <path d="M80 250Q150 205 220 250L250 330Q170 370 100 330Z"/>
-      <path d="M450 190Q520 160 590 200L610 260Q540 290 470 255Z"/>
-      <path d="M780 420Q835 380 900 425L900 465Q830 490 785 460Z"/>
-    </g>
+<g fill="url(#forest)">
+<path d="M80 250Q150 205 220 250L250 330Q170 370 100 330Z"/>
+<path d="M450 190Q520 160 590 200L610 260Q540 290 470 255Z"/>
+<path d="M780 420Q835 380 900 425L900 465Q830 490 785 460Z"/>
+</g>
 
-    <g fill="none" stroke="#6cc4d1" stroke-width="5" stroke-linecap="round">
-      <path d="M185 120Q220 190 195 255T240 390"/>
-      <path d="M490 100Q470 180 520 220T555 350"/>
-      <path d="M830 300Q800 360 850 420"/>
-      <path d="M340 460Q380 510 350 600"/>
-    </g>
+<g fill="none" stroke="#6cc4d1" stroke-width="5" stroke-linecap="round">
+<path d="M185 120Q220 190 195 255T240 390"/>
+<path d="M490 100Q470 180 520 220T555 350"/>
+<path d="M830 300Q800 360 850 420"/>
+<path d="M340 460Q380 510 350 600"/>
+</g>
 
-    <g fill="#4c9eaf" stroke="#b4dce0" stroke-width="3">
-      <ellipse cx="270" cy="210" rx="22" ry="12"/>
-      <ellipse cx="600" cy="190" rx="28" ry="14"/>
-      <ellipse cx="400" cy="570" rx="25" ry="15"/>
-      <ellipse cx="865" cy="350" rx="20" ry="12"/>
-    </g>
+<g fill="#4c9eaf" stroke="#b4dce0" stroke-width="3">
+<ellipse cx="270" cy="210" rx="22" ry="12"/>
+<ellipse cx="600" cy="190" rx="28" ry="14"/>
+<ellipse cx="400" cy="570" rx="25" ry="15"/>
+<ellipse cx="865" cy="350" rx="20" ry="12"/>
+</g>
 
-    <g fill="none" stroke="#d4bd8b" stroke-width="3" stroke-dasharray="7 5">
-      <path d="M170 300Q280 230 440 220"/>
-      <path d="M440 220Q560 180 650 220"/>
-      <path d="M650 220Q750 300 840 370"/>
-      <path d="M300 460Q370 420 440 350"/>
-    </g>
+<g fill="none" stroke="#d4bd8b" stroke-width="3" stroke-dasharray="7 5">
+<path d="M170 300Q280 230 440 220"/>
+<path d="M440 220Q560 180 650 220"/>
+<path d="M650 220Q750 300 840 370"/>
+<path d="M300 460Q370 420 440 350"/>
+</g>
 
-    <g id="roads"></g>
-    <g id="territories"></g>
-    <g id="resources"></g>
-    <g id="settlements"></g>
-    <g id="mapLabels"></g>
-    <g id="mapMarkers"></g>
-  </svg>
-  </div>
-  <p class="mini-hint">Натисни на карту, щоб вибрати місце для своєї держави.</p>
+<g id="roads"></g>
+<g id="territories"></g>
+<g id="resources"></g>
+<g id="settlements"></g>
+<g id="mapLabels"></g>
+<g id="mapMarkers"></g>
+</svg>
+</div>
+<p class="mini-hint">Натисни на карту, щоб вибрати місце для своєї держави.</p>
 </section>
 
 <aside class="panel">
-  <h3>🔎 Мінікарта</h3>
-  <svg id="miniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1000" height="700" fill="#6e9c9d"/>
-    <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
-      <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-      <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-      <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-      <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-    </g>
-    <g id="miniMarker"></g>
-  </svg>
-  <p class="mini-hint">Торкнися будь-якого місця мінікарти, щоб поставити мітку.</p>
+<h3>🔎 Мінікарта</h3>
+<svg id="miniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+<rect width="1000" height="700" fill="#6e9c9d"/>
+<g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+</g>
+<g id="miniMarker"></g>
+</svg>
+<p class="mini-hint">Торкнися будь-якого місця мінікарти, щоб поставити мітку.</p>
 
-  <div class="stat">🏳️ Держава: <b id="countryDisplay">Не створена</b></div>
-  <div class="stat">📅 Рік: <b id="yearDisplay">2016</b></div>
-  <div class="stat">👥 Населення: <b id="populationDisplay">0</b></div>
-  <div class="stat">💰 Казна: <b id="treasuryDisplay">0 ₴</b></div>
-  <div class="stat">🌾 Їжа: <b id="foodDisplay">0</b></div>
-  <div class="stat">🪵 Дерево: <b id="woodDisplay">0</b></div>
-  <div class="stat">🪨 Камінь: <b id="stoneDisplay">0</b></div>
-  <div class="stat">⛓ Залізо: <b id="ironDisplay">0</b></div>
+<div class="stat">🏳️ Держава: <b id="countryDisplay">Не створена</b></div>
+<div class="stat">📅 Рік: <b id="yearDisplay">2016</b></div>
+<div class="stat">👥 Населення: <b id="populationDisplay">0</b></div>
+<div class="stat">💰 Казна: <b id="treasuryDisplay">0 ₴</b></div>
+<div class="stat">🌾 Їжа: <b id="foodDisplay">0</b></div>
+<div class="stat">🪵 Дерево: <b id="woodDisplay">0</b></div>
+<div class="stat">🪨 Камінь: <b id="stoneDisplay">0</b></div>
+<div class="stat">⛓ Залізо: <b id="ironDisplay">0</b></div>
 </aside>
 </div>
 
 <div id="setupModal">
-  <div class="modal-card">
-    <h2>🏛 Заснування держави</h2>
-    <label>Назва держави</label>
-    <input id="countryName" placeholder="Назва держави">
-    <label>Назва столиці</label>
-    <input id="capitalName" placeholder="Назва столиці">
-    <p>Обери місце на мінікарті:</p>
+<div class="modal-card">
+<h2>🏛 Заснування держави</h2>
+<label for="countryName">Назва держави</label>
+<input id="countryName" placeholder="Назва держави" maxlength="40">
+<label for="capitalName">Назва столиці</label>
+<input id="capitalName" placeholder="Назва столиці" maxlength="40">
+<p>Обери місце на мінікарті:</p>
 
-    <svg id="setupMiniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-      <rect width="1000" height="700" fill="#6e9c9d"/>
-      <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
-        <path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-        <path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-        <path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-        <path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-      </g>
-      <g id="setupMiniMarker"></g>
-    </svg>
+<svg id="setupMiniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+<rect width="1000" height="700" fill="#6e9c9d"/>
+<g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
+<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
+<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
+<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
+</g>
+<g id="setupMiniMarker"></g>
+</svg>
 
-    <p class="mini-hint">Мітку можна змінювати натисканням на карту або мінікарту.</p>
-    <button id="foundBtn">Заснувати державу</button>
-  </div>
+<p class="mini-hint">Мітку можна змінювати натисканням на карту або мінікарту.</p>
+<button type="button" id="foundBtn">Заснувати державу</button>
+</div>
 </div>
 
 <script>
@@ -168,7 +167,6 @@ const miniMarker = document.getElementById("miniMarker");
 
 let selectedLocation = null;
 let markerElement = null;
-let draggingMarker = false;
 let gameStarted = false;
 
 window.selectedLocation = null;
@@ -233,7 +231,7 @@ function updateMarkerPosition(x,y){
       fill="#ff4138" stroke="#fff" stroke-width="5"/>
   `;
 
-  if(miniMarker)miniMarker.innerHTML=markerHTML;
+  miniMarker.innerHTML=markerHTML;
 
   const setupMarker=document.getElementById("setupMiniMarker");
   if(setupMarker)setupMarker.innerHTML=markerHTML;
@@ -244,14 +242,17 @@ function createMapMarker(x,y){
 }
 
 function selectMapPoint(element,event){
+  if(window.gameStarted)return;
   event.preventDefault();
+
   const point=getMapCoordinates(element,event);
   if(!point)return;
+
   createMapMarker(point.x,point.y);
 }
 
 worldMap.addEventListener("pointerdown",event=>{
-  if(event.target.closest(".map-resource"))return;
+  if(event.target.closest && event.target.closest(".map-resource"))return;
   selectMapPoint(worldMap,event);
 });
 
@@ -265,19 +266,29 @@ document.getElementById("setupMiniMap").addEventListener("pointerdown",event=>{
 
 function showMessage(message){
   let box=document.getElementById("foundingMessage");
+
   if(!box){
     box=document.createElement("div");
     box.id="foundingMessage";
     document.body.appendChild(box);
   }
+
   box.textContent=message;
   box.style.display="block";
+
   clearTimeout(window.foundingMessageTimer);
-  window.foundingMessageTimer=setTimeout(()=>box.style.display="none",3000);
+  window.foundingMessageTimer=setTimeout(()=>{
+    box.style.display="none";
+  },3000);
 }
 
 console.log("Частина 1 завантажена");
 </script>
+
+<!-- ЧАСТИНИ 2–6 ВСТАВЛЯТИ ТУТ, ПІСЛЯ ЦЬОГО SCRIPT-КОДУ,
+     АЛЕ ПЕРЕД ЗАКРИВАЛЬНИМ </body> НЕ МОЖНА.
+     ВСТАВЛЯЙ ЇХ ВСЕРЕДИНУ SCRIPT, ПЕРЕД </script>. -->
+
 </body>
 </html>
 
