@@ -1,0 +1,15 @@
+{
+  "name": "ukraina-zhyva-derzhava",
+  "version": "1.0.0",
+  "description": "Симулятор розвитку української держави",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=20 <27"
+  }
+}
