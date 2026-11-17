@@ -1,6 +1,4 @@
 
-<!-- ЧАСТИНА 1 — ОСНОВА КАРТИ ТА ВИПРАВЛЕННЯ -->
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -10,1661 +8,1388 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101923;color:#f1f5f9;font-family:Arial}
-header{padding:13px;background:#1b2b3b;border-bottom:1px solid #40566a}
-h2,h3{margin:5px 0 12px}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;padding:12px}
-.panel{background:#1b2b3b;border:1px solid #40566a;border-radius:12px;padding:10px;min-width:0}
+body{
+ margin:0;
+ background:#101923;
+ color:#f1f5f9;
+ font-family:Arial,sans-serif
+}
+header{
+ padding:14px;
+ background:#1b2b3b;
+ border-bottom:1px solid #40566a
+}
+header h2{margin:0}
+.main{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) 290px;
+ gap:12px;
+ padding:12px
+}
+.panel{
+ background:#1b2b3b;
+ border:1px solid #40566a;
+ border-radius:12px;
+ padding:12px;
+ min-width:0
+}
 .map-wrap{width:100%;overflow:hidden;border-radius:9px}
-#worldMap{display:block;width:100%;height:auto;touch-action:pan-y}
-#miniMap,#setupMiniMap{display:block;width:100%;height:auto;border:1px solid #71869a;border-radius:8px;background:#6e9c9d;touch-action:none;cursor:crosshair}
-.mini-hint{font-size:12px;color:#bdcbd5;line-height:1.4}
-.stat{padding:9px;margin:6px 0;background:#263b4d;border-radius:7px}
-input{display:block;width:100%;padding:12px;margin:6px 0 13px;background:#101c28;color:white;border:1px solid #52677b;border-radius:8px;font-size:16px}
-button{width:100%;padding:12px;background:#2876a8;color:white;border:0;border-radius:9px;font-weight:bold;font-size:15px;cursor:pointer}
-button:disabled{opacity:.5;cursor:not-allowed}
-#setupModal{position:fixed;inset:0;z-index:10000;background:#07111ded;display:flex;align-items:center;justify-content:center;padding:14px}
-.modal-card{width:min(500px,100%);max-height:95vh;overflow:auto;background:#1b2d3e;border:1px solid #607b91;border-radius:15px;padding:16px}
-#foundingMessage{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:11000;background:#1d2d3c;color:white;padding:12px 18px;border:1px solid #71869a;border-radius:12px;font-weight:bold;max-width:90%;text-align:center;display:none}
-.country-territory,.country-label{pointer-events:none}
-.map-resource{cursor:help}
-@media(max-width:750px){.main{grid-template-columns:1fr}}
+svg{display:block;width:100%;height:auto}
+#worldMap{touch-action:none;cursor:crosshair}
+#miniMap,#setupMiniMap{
+ border:1px solid #71869a;
+ border-radius:8px;
+ background:#6e9c9d;
+ touch-action:none;
+ cursor:crosshair
+}
+.stat{
+ padding:9px;
+ margin:6px 0;
+ background:#263b4d;
+ border-radius:7px
+}
+.mini-hint{
+ font-size:12px;
+ color:#bdcbd5;
+ line-height:1.4
+}
+input{
+ display:block;
+ width:100%;
+ padding:12px;
+ margin:7px 0 13px;
+ background:#101c28;
+ color:white;
+ border:1px solid #52677b;
+ border-radius:8px;
+ font-size:16px
+}
+button{
+ width:100%;
+ padding:12px;
+ background:#2876a8;
+ color:white;
+ border:0;
+ border-radius:9px;
+ font-weight:bold;
+ font-size:15px;
+ cursor:pointer
+}
+button:disabled{opacity:.5}
+#setupModal{
+ position:fixed;
+ inset:0;
+ z-index:10000;
+ background:#07111ded;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ padding:14px
+}
+.modal-card{
+ width:min(500px,100%);
+ max-height:95vh;
+ overflow:auto;
+ background:#1b2d3e;
+ border:1px solid #607b91;
+ border-radius:15px;
+ padding:16px
+}
+#foundingMessage{
+ position:fixed;
+ bottom:18px;
+ left:50%;
+ transform:translateX(-50%);
+ z-index:11000;
+ background:#1d2d3c;
+ color:white;
+ padding:12px 18px;
+ border:1px solid #71869a;
+ border-radius:12px;
+ max-width:90%;
+ text-align:center;
+ display:none
+}
+@media(max-width:750px){
+ .main{grid-template-columns:1fr}
+}
 </style>
 </head>
 
 <body>
+
 <header>
-<h2>🌍 Світ держав</h2>
-<div>📅 2016 рік · 💰 ₴</div>
+ <h2>🌍 Світ держав</h2>
+ <div>📅 2016 рік · 💰 Економіка · 🏛️ Держави</div>
 </header>
 
 <div class="main">
+
 <section class="panel">
-<h3>🗺️ Велика карта світу</h3>
-<div class="map-wrap">
-<svg id="worldMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="ocean" x2="0" y2="1">
-<stop stop-color="#85b9b5"/>
-<stop offset="1" stop-color="#426f7b"/>
-</linearGradient>
-<pattern id="forest" width="24" height="24" patternUnits="userSpaceOnUse">
-<path d="M12 2L3 20H21Z" fill="#285b42" opacity=".55"/>
-</pattern>
-</defs>
+ <h3>🗺️ Світова карта</h3>
 
-<rect width="1000" height="700" fill="url(#ocean)"/>
+ <div class="map-wrap">
+ <svg id="worldMap" viewBox="0 0 1000 700"
+ xmlns="http://www.w3.org/2000/svg">
 
-<g fill="#a7b483" stroke="#e0d5a4" stroke-width="5">
-<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-</g>
+ <defs>
+  <linearGradient id="ocean" x2="0" y2="1">
+   <stop stop-color="#85b9b5"/>
+   <stop offset="1" stop-color="#426f7b"/>
+  </linearGradient>
 
-<g fill="#777d72" stroke="#e4dfc8" stroke-width="2">
-<path d="M120 180L150 115 180 180Z"/>
-<path d="M155 190L190 120 225 190Z"/>
-<path d="M425 145L465 75 505 145Z"/>
-<path d="M465 155L510 85 550 155Z"/>
-<path d="M550 320L590 245 630 320Z"/>
-<path d="M300 550L340 470 380 550Z"/>
-<path d="M810 400L850 325 890 400Z"/>
-</g>
+  <pattern id="forest" width="22" height="22"
+  patternUnits="userSpaceOnUse">
+   <path d="M11 2L2 20H20Z"
+   fill="#285b42" opacity=".6"/>
+  </pattern>
+ </defs>
 
-<g fill="url(#forest)">
-<path d="M80 250Q150 205 220 250L250 330Q170 370 100 330Z"/>
-<path d="M450 190Q520 160 590 200L610 260Q540 290 470 255Z"/>
-<path d="M780 420Q835 380 900 425L900 465Q830 490 785 460Z"/>
-</g>
+ <rect width="1000" height="700" fill="url(#ocean)"/>
 
-<g fill="none" stroke="#6cc4d1" stroke-width="5" stroke-linecap="round">
-<path d="M185 120Q220 190 195 255T240 390"/>
-<path d="M490 100Q470 180 520 220T555 350"/>
-<path d="M830 300Q800 360 850 420"/>
-<path d="M340 460Q380 510 350 600"/>
-</g>
+ <!-- Континенти -->
+ <g fill="#a7b483" stroke="#e0d5a4" stroke-width="5">
 
-<g fill="#4c9eaf" stroke="#b4dce0" stroke-width="3">
-<ellipse cx="270" cy="210" rx="22" ry="12"/>
-<ellipse cx="600" cy="190" rx="28" ry="14"/>
-<ellipse cx="400" cy="570" rx="25" ry="15"/>
-<ellipse cx="865" cy="350" rx="20" ry="12"/>
-</g>
+  <path d="M65 160L105 105 190 80 255 105
+  320 90 370 135 390 200 360 250 380 305
+  340 360 300 390 265 455 195 470 155 430
+  105 410 75 350 45 290Z"/>
 
-<g fill="none" stroke="#d4bd8b" stroke-width="3" stroke-dasharray="7 5">
-<path d="M170 300Q280 230 440 220"/>
-<path d="M440 220Q560 180 650 220"/>
-<path d="M650 220Q750 300 840 370"/>
-<path d="M300 460Q370 420 440 350"/>
-</g>
+  <path d="M360 80L440 55 520 70 570 110
+  645 100 700 145 735 210 700 265 655 300
+  625 355 555 365 510 330 455 350 400 315
+  380 260 340 220Z"/>
 
-<g id="roads"></g>
-<g id="territories"></g>
-<g id="resources"></g>
-<g id="settlements"></g>
-<g id="mapLabels"></g>
-<g id="mapMarkers"></g>
-</svg>
-</div>
-<p class="mini-hint">Натисни на карту, щоб вибрати місце для своєї держави.</p>
+  <path d="M220 470L300 420 390 440 455 480
+  470 550 430 620 380 665 310 650 260 600
+  225 545Z"/>
+
+  <path d="M700 300L770 265 850 280 930 330
+  955 400 925 470 880 500 825 480 775 510
+  730 465 680 400Z"/>
+
+ </g>
+
+ <!-- Гори -->
+ <g fill="#777d72" stroke="#e4dfc8" stroke-width="2">
+  <path d="M120 180L150 115 180 180Z"/>
+  <path d="M155 190L190 120 225 190Z"/>
+  <path d="M425 145L465 75 505 145Z"/>
+  <path d="M465 155L510 85 550 155Z"/>
+  <path d="M550 320L590 245 630 320Z"/>
+  <path d="M300 550L340 470 380 550Z"/>
+  <path d="M810 400L850 325 890 400Z"/>
+ </g>
+
+ <!-- Ліси -->
+ <g fill="url(#forest)">
+  <path d="M80 250Q150 205 220 250L250 330
+  Q170 370 100 330Z"/>
+  <path d="M450 190Q520 160 590 200L610 260
+  Q540 290 470 255Z"/>
+  <path d="M780 420Q835 380 900 425L900 465
+  Q830 490 785 460Z"/>
+ </g>
+
+ <!-- Річки -->
+ <g fill="none" stroke="#6cc4d1"
+ stroke-width="5" stroke-linecap="round">
+  <path d="M185 120Q220 190 195 255T240 390"/>
+  <path d="M490 100Q470 180 520 220T555 350"/>
+  <path d="M830 300Q800 360 850 420"/>
+  <path d="M340 460Q380 510 350 600"/>
+ </g>
+
+ <!-- Озера -->
+ <g fill="#4c9eaf" stroke="#b4dce0" stroke-width="3">
+  <ellipse cx="270" cy="210" rx="22" ry="12"/>
+  <ellipse cx="600" cy="190" rx="28" ry="14"/>
+  <ellipse cx="400" cy="570" rx="25" ry="15"/>
+  <ellipse cx="865" cy="350" rx="20" ry="12"/>
+ </g>
+
+ <!-- Початкові торгові шляхи -->
+ <g fill="none" stroke="#d4bd8b"
+ stroke-width="3" stroke-dasharray="7 5">
+  <path d="M170 300Q280 230 440 220"/>
+  <path d="M440 220Q560 180 650 220"/>
+  <path d="M650 220Q750 300 840 370"/>
+  <path d="M300 460Q370 420 440 350"/>
+ </g>
+
+ <!-- Шари ігрового світу -->
+ <g id="roads"></g>
+ <g id="territories"></g>
+ <g id="resources"></g>
+ <g id="settlements"></g>
+ <g id="mapLabels"></g>
+ <g id="mapMarkers"></g>
+
+ </svg>
+ </div>
+
+ <p class="mini-hint">
+ Натискай на карту, щоб обрати місце для своєї держави.
+ </p>
 </section>
 
 <aside class="panel">
-<h3>🔎 Мінікарта</h3>
-<svg id="miniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-<rect width="1000" height="700" fill="#6e9c9d"/>
-<g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
-<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-</g>
-<g id="miniMarker"></g>
-</svg>
-<p class="mini-hint">Торкнися будь-якого місця мінікарти, щоб поставити мітку.</p>
+ <h3>🔎 Мінікарта</h3>
 
-<div class="stat">🏳️ Держава: <b id="countryDisplay">Не створена</b></div>
-<div class="stat">📅 Рік: <b id="yearDisplay">2016</b></div>
-<div class="stat">👥 Населення: <b id="populationDisplay">0</b></div>
-<div class="stat">💰 Казна: <b id="treasuryDisplay">0 ₴</b></div>
-<div class="stat">🌾 Їжа: <b id="foodDisplay">0</b></div>
-<div class="stat">🪵 Дерево: <b id="woodDisplay">0</b></div>
-<div class="stat">🪨 Камінь: <b id="stoneDisplay">0</b></div>
-<div class="stat">⛓ Залізо: <b id="ironDisplay">0</b></div>
+ <svg id="miniMap" viewBox="0 0 1000 700"
+ xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="1000" height="700" fill="#6e9c9d"/>
+
+  <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+   <path d="M65 160L105 105 190 80 255 105
+   320 90 370 135 390 200 360 250 380 305
+   340 360 300 390 265 455 195 470 155 430
+   105 410 75 350 45 290Z"/>
+
+   <path d="M360 80L440 55 520 70 570 110
+   645 100 700 145 735 210 700 265 655 300
+   625 355 555 365 510 330 455 350 400 315
+   380 260 340 220Z"/>
+
+   <path d="M220 470L300 420 390 440 455 480
+   470 550 430 620 380 665 310 650 260 600
+   225 545Z"/>
+
+   <path d="M700 300L770 265 850 280 930 330
+   955 400 925 470 880 500 825 480 775 510
+   730 465 680 400Z"/>
+  </g>
+
+  <g id="miniMarker"></g>
+ </svg>
+
+ <p class="mini-hint">Тут відображатиметься вибране місце.</p>
+
+ <div class="stat">🏳️ Держава: <b id="countryDisplay">Не створена</b></div>
+ <div class="stat">📅 Рік: <b id="yearDisplay">2016</b></div>
+ <div class="stat">👥 Населення: <b id="populationDisplay">0</b></div>
+ <div class="stat">💰 Казна: <b id="treasuryDisplay">0 ₴</b></div>
+ <div class="stat">🌾 Їжа: <b id="foodDisplay">0</b></div>
+ <div class="stat">🪵 Дерево: <b id="woodDisplay">0</b></div>
+ <div class="stat">🪨 Камінь: <b id="stoneDisplay">0</b></div>
+ <div class="stat">⛓ Залізо: <b id="ironDisplay">0</b></div>
+
 </aside>
 </div>
 
+<!-- Вікно заснування -->
 <div id="setupModal">
-<div class="modal-card">
-<h2>🏛 Заснування держави</h2>
-<label for="countryName">Назва держави</label>
-<input id="countryName" placeholder="Назва держави" maxlength="40">
-<label for="capitalName">Назва столиці</label>
-<input id="capitalName" placeholder="Назва столиці" maxlength="40">
-<p>Обери місце на мінікарті:</p>
+ <div class="modal-card">
 
-<svg id="setupMiniMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-<rect width="1000" height="700" fill="#6e9c9d"/>
-<g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
-<path d="M65 160L105 105 190 80 255 105 320 90 370 135 390 200 360 250 380 305 340 360 300 390 265 455 195 470 155 430 105 410 75 350 45 290Z"/>
-<path d="M360 80L440 55 520 70 570 110 645 100 700 145 735 210 700 265 655 300 625 355 555 365 510 330 455 350 400 315 380 260 340 220Z"/>
-<path d="M220 470L300 420 390 440 455 480 470 550 430 620 380 665 310 650 260 600 225 545Z"/>
-<path d="M700 300L770 265 850 280 930 330 955 400 925 470 880 500 825 480 775 510 730 465 680 400Z"/>
-</g>
-<g id="setupMiniMarker"></g>
-</svg>
+  <h2>🏛️ Заснування держави</h2>
 
-<p class="mini-hint">Мітку можна змінювати натисканням на карту або мінікарту.</p>
-<button type="button" id="foundBtn">Заснувати державу</button>
-</div>
+  <label for="countryName">Назва держави</label>
+  <input id="countryName" maxlength="40"
+  placeholder="Наприклад: Королівство Асторія">
+
+  <label for="capitalName">Назва столиці</label>
+  <input id="capitalName" maxlength="40"
+  placeholder="Назва столиці">
+
+  <p>📍 Обери місце своєї держави:</p>
+
+  <svg id="setupMiniMap" viewBox="0 0 1000 700"
+  xmlns="http://www.w3.org/2000/svg">
+
+   <rect width="1000" height="700" fill="#6e9c9d"/>
+
+   <g fill="#a7b483" stroke="#e0d5a4" stroke-width="8">
+    <path d="M65 160L105 105 190 80 255 105
+    320 90 370 135 390 200 360 250 380 305
+    340 360 300 390 265 455 195 470 155 430
+    105 410 75 350 45 290Z"/>
+
+    <path d="M360 80L440 55 520 70 570 110
+    645 100 700 145 735 210 700 265 655 300
+    625 355 555 365 510 330 455 350 400 315
+    380 260 340 220Z"/>
+
+    <path d="M220 470L300 420 390 440 455 480
+    470 550 430 620 380 665 310 650 260 600
+    225 545Z"/>
+
+    <path d="M700 300L770 265 850 280 930 330
+    955 400 925 470 880 500 825 480 775 510
+    730 465 680 400Z"/>
+   </g>
+
+   <g id="setupMiniMarker"></g>
+  </svg>
+
+  <p class="mini-hint">
+   Торкнися карти, щоб поставити мітку.
+  </p>
+
+  <button type="button" id="foundBtn">
+   Заснувати державу
+  </button>
+
+ </div>
 </div>
 
 <script>
+
+// ======================================
+// ГЛОБАЛЬНІ ЗМІННІ НОВОЇ ГРИ
+// ======================================
+
+window.selectedLocation = null;
+window.gameStarted = false;
+window.playerCountry = null;
+window.worldStates = [];
+window.worldResources = [];
+
 const worldMap = document.getElementById("worldMap");
 const markerLayer = document.getElementById("mapMarkers");
 const miniMarker = document.getElementById("miniMarker");
 
-let selectedLocation = null;
-let markerElement = null;
-let gameStarted = false;
-
-window.selectedLocation = null;
-window.gameStarted = false;
-
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-function getMapCoordinates(element,event){
-  const rect=element.getBoundingClientRect();
-  const view=element.viewBox.baseVal;
+let selectedMarker = null;
 
-  if(!rect.width||!rect.height)return null;
-
-  const x=(event.clientX-rect.left)/rect.width*view.width;
-  const y=(event.clientY-rect.top)/rect.height*view.height;
-
-  return {
-    x:Math.max(0,Math.min(view.width,x)),
-    y:Math.max(0,Math.min(view.height,y))
-  };
-}
-
-function updateMarkerPosition(x,y){
-  selectedLocation={x,y};
-  window.selectedLocation={x,y};
-
-  if(!markerElement){
-    markerElement=document.createElementNS(SVG_NS,"g");
-    markerElement.setAttribute("class","selected-map-marker");
-    markerElement.setAttribute("pointer-events","none");
-
-    const pin=document.createElementNS(SVG_NS,"path");
-    pin.setAttribute("d","M0 8 L-10 27 L10 27 Z");
-    pin.setAttribute("fill","#ff4138");
-    pin.setAttribute("stroke","#fff");
-    pin.setAttribute("stroke-width","3");
-
-    const outer=document.createElementNS(SVG_NS,"circle");
-    outer.setAttribute("r","17");
-    outer.setAttribute("fill","#ff4138");
-    outer.setAttribute("fill-opacity",".35");
-    outer.setAttribute("stroke","#fff");
-    outer.setAttribute("stroke-width","3");
-
-    const inner=document.createElementNS(SVG_NS,"circle");
-    inner.setAttribute("r","6");
-    inner.setAttribute("fill","#ff4138");
-    inner.setAttribute("stroke","#fff");
-    inner.setAttribute("stroke-width","2");
-
-    markerElement.append(pin,outer,inner);
-    markerLayer.appendChild(markerElement);
-  }
-
-  markerElement.setAttribute("transform",`translate(${x} ${y})`);
-
-  const markerHTML=`
-    <circle cx="${x}" cy="${y}" r="25"
-      fill="#ff4138" fill-opacity=".3"
-      stroke="#fff" stroke-width="7"/>
-    <circle cx="${x}" cy="${y}" r="10"
-      fill="#ff4138" stroke="#fff" stroke-width="5"/>
-  `;
-
-  miniMarker.innerHTML=markerHTML;
-
-  const setupMarker=document.getElementById("setupMiniMarker");
-  if(setupMarker)setupMarker.innerHTML=markerHTML;
-}
-
-function createMapMarker(x,y){
-  updateMarkerPosition(x,y);
-}
-
-function selectMapPoint(element,event){
-  if(window.gameStarted)return;
-  event.preventDefault();
-
-  const point=getMapCoordinates(element,event);
-  if(!point)return;
-
-  createMapMarker(point.x,point.y);
-}
-
-worldMap.addEventListener("pointerdown",event=>{
-  if(event.target.closest && event.target.closest(".map-resource"))return;
-  selectMapPoint(worldMap,event);
-});
-
-document.getElementById("miniMap").addEventListener("pointerdown",event=>{
-  selectMapPoint(event.currentTarget,event);
-});
-
-document.getElementById("setupMiniMap").addEventListener("pointerdown",event=>{
-  selectMapPoint(event.currentTarget,event);
-});
+// ======================================
+// ПОВІДОМЛЕННЯ
+// ======================================
 
 function showMessage(message){
-  let box=document.getElementById("foundingMessage");
+ let box=document.getElementById("foundingMessage");
 
-  if(!box){
-    box=document.createElement("div");
-    box.id="foundingMessage";
-    document.body.appendChild(box);
-  }
+ if(!box){
+  box=document.createElement("div");
+  box.id="foundingMessage";
+  document.body.appendChild(box);
+ }
 
-  box.textContent=message;
-  box.style.display="block";
+ box.textContent=message;
+ box.style.display="block";
 
-  clearTimeout(window.foundingMessageTimer);
-  window.foundingMessageTimer=setTimeout(()=>{
-    box.style.display="none";
-  },3000);
+ clearTimeout(window.foundingMessageTimer);
+
+ window.foundingMessageTimer=setTimeout(()=>{
+  box.style.display="none";
+ },3000);
 }
 
-console.log("Частина 1 завантажена");
-</script>
+// ======================================
+// КООРДИНАТИ КАРТИ
+// ======================================
 
-<!-- ЧАСТИНИ 2–6 ВСТАВЛЯТИ ТУТ, ПІСЛЯ ЦЬОГО SCRIPT-КОДУ,
-     АЛЕ ПЕРЕД ЗАКРИВАЛЬНИМ </body> НЕ МОЖНА.
-     ВСТАВЛЯЙ ЇХ ВСЕРЕДИНУ SCRIPT, ПЕРЕД </script>. -->
+function getMapCoordinates(element,event){
 
-</body>
-</html>
+ const rect=element.getBoundingClientRect();
+ const view=element.viewBox.baseVal;
 
-// ================================
+ if(!rect.width || !rect.height)return null;
+
+ const x=(event.clientX-rect.left)/rect.width*view.width;
+ const y=(event.clientY-rect.top)/rect.height*view.height;
+
+ return {
+  x:Math.max(0,Math.min(view.width,x)),
+  y:Math.max(0,Math.min(view.height,y))
+ };
+}
+
+// ======================================
+// СТВОРЕННЯ МІТКИ
+// ======================================
+
+function updateMarkerPosition(x,y){
+
+ window.selectedLocation={x,y};
+
+ const markerHTML=`
+  <circle cx="${x}" cy="${y}" r="25"
+  fill="#ff4138" fill-opacity=".35"
+  stroke="#ffffff" stroke-width="7"/>
+
+  <circle cx="${x}" cy="${y}" r="9"
+  fill="#ff4138" stroke="#ffffff" stroke-width="4"/>
+ `;
+
+ miniMarker.innerHTML=markerHTML;
+
+ document.getElementById("setupMiniMarker").innerHTML=markerHTML;
+
+ if(!selectedMarker){
+
+  selectedMarker=document.createElementNS(SVG_NS,"g");
+
+  selectedMarker.setAttribute("pointer-events","none");
+
+  selectedMarker.innerHTML=`
+   <circle cx="0" cy="0" r="20"
+   fill="#ff4138" fill-opacity=".35"
+   stroke="#ffffff" stroke-width="3"/>
+
+   <circle cx="0" cy="0" r="7"
+   fill="#ff4138" stroke="#ffffff" stroke-width="3"/>
+  `;
+
+  markerLayer.appendChild(selectedMarker);
+ }
+
+ selectedMarker.setAttribute(
+  "transform",
+  `translate(${x} ${y})`
+ );
+}
+
+// ======================================
+// ВИБІР МІСЦЯ
+// ======================================
+
+function selectMapPoint(element,event){
+
+ if(window.gameStarted)return;
+
+ event.preventDefault();
+
+ const point=getMapCoordinates(element,event);
+
+ if(!point)return;
+
+ updateMarkerPosition(point.x,point.y);
+}
+
+// ======================================
+// ОБРОБНИКИ КАРТ
+// ======================================
+
+worldMap.addEventListener("pointerdown",event=>{
+ selectMapPoint(worldMap,event);
+});
+
+document.getElementById("miniMap")
+.addEventListener("pointerdown",event=>{
+ selectMapPoint(event.currentTarget,event);
+});
+
+document.getElementById("setupMiniMap")
+.addEventListener("pointerdown",event=>{
+ selectMapPoint(event.currentTarget,event);
+});
+
+console.log("Нова основа гри завантажена");
+
+// ======================================
+// ЧАСТИНУ 2 ВСТАВИТИ НИЖЧЕ
+// НЕ ЗАКРИВАТИ SCRIPT!
+// ======================================
+
+// ======================================
 // ЧАСТИНА 2 — ДЕРЖАВИ ТА РЕСУРСИ
-// ================================
+// ======================================
 
 (() => {
-  const svg = document.getElementById("worldMap");
-  const territoryLayer = document.getElementById("territories");
-  const resourceLayer = document.getElementById("resources");
-  const labelLayer = document.getElementById("mapLabels");
 
-  if (!svg || !territoryLayer || !resourceLayer || !labelLayer) {
-    console.error("Не знайдено шари карти для частини 2");
-    return;
-  }
+ const svg=document.getElementById("worldMap");
+ const territories=document.getElementById("territories");
+ const resources=document.getElementById("resources");
+ const labels=document.getElementById("mapLabels");
 
-  const viewBox = svg.viewBox.baseVal;
-  const W = viewBox.width || 1000;
-  const H = viewBox.height || 700;
+ if(!svg || !territories || !resources || !labels){
+  console.error("Помилка частини 2: відсутні шари карти");
+  return;
+ }
 
-  const worldStates = [
-    {
-      name: "Королівство Вестмар",
-      color: "#d9a441",
-      points: [
-        [0.08,0.25],[0.23,0.19],[0.34,0.29],
-        [0.31,0.48],[0.21,0.57],[0.10,0.46]
-      ],
-      capital: "Вестград",
-      population: 28400
-    },
-    {
-      name: "Союз Нордвік",
-      color: "#5998bd",
-      points: [
-        [0.34,0.12],[0.55,0.10],[0.65,0.25],
-        [0.56,0.39],[0.39,0.32]
-      ],
-      capital: "Нордбург",
-      population: 19300
-    },
-    {
-      name: "Республіка Есталія",
-      color: "#75a66a",
-      points: [
-        [0.56,0.39],[0.72,0.31],[0.88,0.43],
-        [0.84,0.62],[0.67,0.68],[0.53,0.56]
-      ],
-      capital: "Есталь",
-      population: 31600
-    },
-    {
-      name: "Гірська держава Арден",
-      color: "#a77ab8",
-      points: [
-        [0.21,0.57],[0.31,0.48],[0.53,0.56],
-        [0.51,0.77],[0.35,0.86],[0.19,0.76]
-      ],
-      capital: "Арденбург",
-      population: 14700
-    }
-  ];
+ const W=1000;
+ const H=700;
+ const NS="http://www.w3.org/2000/svg";
 
-  function makeSvgElement(tag, attributes) {
-    const element = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      tag
-    );
+ function makeElement(tag,attrs={}){
+  const el=document.createElementNS(NS,tag);
 
-    Object.entries(attributes).forEach(([key, value]) => {
-      element.setAttribute(key, value);
-    });
-
-    return element;
-  }
-
-  worldStates.forEach((state, index) => {
-    const points = state.points.map(([x, y]) => {
-      return `${x * W},${y * H}`;
-    }).join(" ");
-
-    const territory = makeSvgElement("polygon", {
-      points,
-      fill: state.color,
-      "fill-opacity": "0.17",
-      stroke: state.color,
-      "stroke-width": "3",
-      "stroke-opacity": "0.9",
-      "stroke-linejoin": "round",
-      "class": "country-territory"
-    });
-
-    territoryLayer.appendChild(territory);
-
-    const centerX = state.points.reduce(
-      (sum, point) => sum + point[0], 0
-    ) / state.points.length * W;
-
-    const centerY = state.points.reduce(
-      (sum, point) => sum + point[1], 0
-    ) / state.points.length * H;
-
-    const stateLabel = makeSvgElement("text", {
-      x: centerX,
-      y: centerY,
-      "text-anchor": "middle",
-      fill: "#ffffff",
-      "font-size": Math.max(13, W * 0.017),
-      "font-weight": "bold",
-      "paint-order": "stroke",
-      stroke: "#17212b",
-      "stroke-width": "4",
-      "stroke-linejoin": "round",
-      "class": "country-label"
-    });
-
-    stateLabel.textContent = state.name;
-    labelLayer.appendChild(stateLabel);
-
-    const capital = makeSvgElement("text", {
-      x: centerX,
-      y: centerY + 20,
-      "text-anchor": "middle",
-      fill: "#fff3bd",
-      "font-size": Math.max(10, W * 0.012),
-      "paint-order": "stroke",
-      stroke: "#17212b",
-      "stroke-width": "3"
-    });
-
-    capital.textContent = "★ " + state.capital;
-    labelLayer.appendChild(capital);
-
-    state.id = index + 1;
+  Object.entries(attrs).forEach(([key,value])=>{
+   el.setAttribute(key,value);
   });
 
-  const worldResources = [
-    {name:"Залізо",x:0.15,y:0.35,color:"#aeb8c2",symbol:"◆"},
-    {name:"Золото",x:0.27,y:0.29,color:"#ffd34f",symbol:"◆"},
-    {name:"Вугілля",x:0.42,y:0.22,color:"#424a55",symbol:"◆"},
-    {name:"Ліс",x:0.47,y:0.42,color:"#61b86b",symbol:"♣"},
-    {name:"Мідь",x:0.68,y:0.48,color:"#d88b55",symbol:"◆"},
-    {name:"Залізо",x:0.77,y:0.55,color:"#aeb8c2",symbol:"◆"},
-    {name:"Камінь",x:0.40,y:0.70,color:"#c0b9ad",symbol:"◆"},
-    {name:"Вугілля",x:0.58,y:0.73,color:"#424a55",symbol:"◆"},
-    {name:"Ліс",x:0.82,y:0.72,color:"#61b86b",symbol:"♣"},
-    {name:"Золото",x:0.29,y:0.78,color:"#ffd34f",symbol:"◆"}
-  ];
+  return el;
+ }
 
-  worldResources.forEach(resource => {
-    const x = resource.x * W;
-    const y = resource.y * H;
+ // ======================================
+ // ВИГАДАНІ ДЕРЖАВИ
+ // ======================================
 
-    const group = makeSvgElement("g", {
-      transform: `translate(${x} ${y})`,
-      class: "map-resource"
-    });
+ const worldStates=[
+  {
+   id:1,
+   name:"Королівство Вестмар",
+   capital:"Вестград",
+   color:"#d9a441",
+   population:28400,
+   treasury:85000,
+   points:[
+    [80,175],[150,125],[245,135],
+    [320,185],[350,275],[300,345],
+    [210,375],[115,330],[65,250]
+   ]
+  },
+  {
+   id:2,
+   name:"Союз Нордвік",
+   capital:"Нордбург",
+   color:"#5998bd",
+   population:19300,
+   treasury:62000,
+   points:[
+    [370,105],[455,75],[550,100],
+    [625,155],[640,235],[570,300],
+    [475,310],[390,255],[350,180]
+   ]
+  },
+  {
+   id:3,
+   name:"Республіка Есталія",
+   capital:"Есталь",
+   color:"#75a66a",
+   population:31600,
+   treasury:105000,
+   points:[
+    [650,270],[740,245],[850,290],
+    [920,365],[900,445],[815,485],
+    [730,455],[665,385],[625,320]
+   ]
+  },
+  {
+   id:4,
+   name:"Гірська держава Арден",
+   capital:"Арденбург",
+   color:"#a77ab8",
+   population:14700,
+   treasury:47000,
+   points:[
+    [240,410],[330,370],[425,410],
+    [475,485],[440,570],[360,630],
+    [275,600],[220,520]
+   ]
+  },
+  {
+   id:5,
+   name:"Федерація Солар",
+   capital:"Сонцеград",
+   color:"#cf765d",
+   population:22100,
+   treasury:73000,
+   points:[
+    [510,390],[590,350],[680,390],
+    [710,470],[665,550],[570,570],
+    [495,510]
+   ]
+  }
+ ];
 
-    const circle = makeSvgElement("circle", {
-      cx: 0,
-      cy: 0,
-      r: Math.max(10, W * 0.012),
-      fill: "#152331",
-      stroke: resource.color,
-      "stroke-width": "2"
-    });
+ // ======================================
+ // МАЛЮВАННЯ ТЕРИТОРІЙ
+ // ======================================
 
-    const symbol = makeSvgElement("text", {
-      x: 0,
-      y: 5,
-      "text-anchor": "middle",
-      fill: resource.color,
-      "font-size": Math.max(12, W * 0.015),
-      "font-weight": "bold"
-    });
+ worldStates.forEach(state=>{
 
-    symbol.textContent = resource.symbol;
+  const points=state.points
+   .map(([x,y])=>`${x},${y}`)
+   .join(" ");
 
-    const title = makeSvgElement("title", {});
-    title.textContent = resource.name;
-
-    group.appendChild(circle);
-    group.appendChild(symbol);
-    group.appendChild(title);
-    resourceLayer.appendChild(group);
+  const polygon=makeElement("polygon",{
+   points,
+   fill:state.color,
+   "fill-opacity":"0.25",
+   stroke:state.color,
+   "stroke-width":"5",
+   "stroke-linejoin":"round",
+   class:"country-territory",
+   "data-state-id":state.id
   });
 
-  const style = document.createElement("style");
-  style.textContent = `
-    .country-territory {
-      transition: fill-opacity .3s ease;
-      pointer-events: none;
-    }
+  territories.appendChild(polygon);
 
-    .country-territory:hover {
-      fill-opacity: .28;
-    }
+  const centerX=state.points.reduce(
+   (sum,p)=>sum+p[0],0
+  )/state.points.length;
 
-    .country-label {
-      pointer-events: none;
-      user-select: none;
-    }
+  const centerY=state.points.reduce(
+   (sum,p)=>sum+p[1],0
+  )/state.points.length;
 
-    .map-resource {
-      cursor: help;
-      pointer-events: auto;
-    }
+  const name=makeElement("text",{
+   x:centerX,
+   y:centerY,
+   "text-anchor":"middle",
+   fill:"#ffffff",
+   "font-size":"17",
+   "font-weight":"bold",
+   "paint-order":"stroke",
+   stroke:"#17212b",
+   "stroke-width":"5",
+   "stroke-linejoin":"round",
+   class:"country-label"
+  });
 
-    .map-resource circle {
-      filter: drop-shadow(0 1px 4px #0009);
-    }
-  `;
-  document.head.appendChild(style);
+  name.textContent=state.name;
+  labels.appendChild(name);
 
-  window.worldStates = worldStates;
-  window.worldResources = worldResources;
+  const capital=makeElement("text",{
+   x:centerX,
+   y:centerY+23,
+   "text-anchor":"middle",
+   fill:"#fff1bd",
+   "font-size":"13",
+   "font-weight":"bold",
+   "paint-order":"stroke",
+   stroke:"#17212b",
+   "stroke-width":"4"
+  });
 
-  console.log("Частина 2 завантажена: держави та ресурси");
+  capital.textContent="★ "+state.capital;
+  labels.appendChild(capital);
+
+  state.center={
+   x:centerX,
+   y:centerY
+  };
+ });
+
+ window.worldStates=worldStates;
+
+ // ======================================
+ // ПРИРОДНІ РЕСУРСИ
+ // ======================================
+
+ const worldResources=[
+  {id:1,name:"Залізо",x:130,y:260,color:"#c5cbd2",symbol:"◆"},
+  {id:2,name:"Золото",x:270,y:205,color:"#ffd34f",symbol:"◆"},
+  {id:3,name:"Вугілля",x:420,y:170,color:"#424a55",symbol:"◆"},
+  {id:4,name:"Ліс",x:475,y:250,color:"#61b86b",symbol:"♣"},
+  {id:5,name:"Мідь",x:700,y:345,color:"#d88b55",symbol:"◆"},
+  {id:6,name:"Залізо",x:820,y:410,color:"#c5cbd2",symbol:"◆"},
+  {id:7,name:"Камінь",x:350,y:520,color:"#c0b9ad",symbol:"◆"},
+  {id:8,name:"Вугілля",x:580,y:485,color:"#424a55",symbol:"◆"},
+  {id:9,name:"Ліс",x:850,y:465,color:"#61b86b",symbol:"♣"},
+  {id:10,name:"Золото",x:300,y:570,color:"#ffd34f",symbol:"◆"},
+  {id:11,name:"Мідь",x:550,y:125,color:"#d88b55",symbol:"◆"},
+  {id:12,name:"Камінь",x:740,y:520,color:"#c0b9ad",symbol:"◆"},
+  {id:13,name:"Залізо",x:180,y:430,color:"#c5cbd2",symbol:"◆"},
+  {id:14,name:"Ліс",x:650,y:580,color:"#61b86b",symbol:"♣"}
+ ];
+
+ // ======================================
+ // МАЛЮВАННЯ РОДОВИЩ
+ // ======================================
+
+ worldResources.forEach(resource=>{
+
+  const group=makeElement("g",{
+   transform:`translate(${resource.x} ${resource.y})`,
+   class:"map-resource"
+  });
+
+  const circle=makeElement("circle",{
+   cx:0,
+   cy:0,
+   r:14,
+   fill:"#152331",
+   stroke:resource.color,
+   "stroke-width":3
+  });
+
+  const symbol=makeElement("text",{
+   x:0,
+   y:5,
+   "text-anchor":"middle",
+   fill:resource.color,
+   "font-size":15,
+   "font-weight":"bold"
+  });
+
+  symbol.textContent=resource.symbol;
+
+  const title=makeElement("title");
+  title.textContent=resource.name;
+
+  group.append(circle,symbol,title);
+  resources.appendChild(group);
+ });
+
+ window.worldResources=worldResources;
+
+ // ======================================
+ // СТИЛІ КАРТИ
+ // ======================================
+
+ const style=document.createElement("style");
+
+ style.textContent=`
+  .country-territory{
+   pointer-events:none;
+   transition:fill-opacity .3s;
+  }
+
+  .country-label{
+   pointer-events:none;
+   user-select:none;
+  }
+
+  .map-resource{
+   cursor:help;
+  }
+
+  .map-resource circle{
+   filter:drop-shadow(0 2px 4px #0009);
+  }
+
+  .map-resource:hover circle{
+   stroke-width:4;
+  }
+
+  .player-country-border{
+   pointer-events:none;
+  }
+ `;
+
+ document.head.appendChild(style);
+
+ console.log("Частина 2 завантажена успішно");
+
 })();
+ 
+// ======================================
+// ДАЛІ ВСТАВИТИ ЧАСТИНУ 3
+// НЕ ЗАКРИВАТИ SCRIPT!
+// ======================================
 
- // ================================
- // ЧАСТИНА 3 — СТВОРЕННЯ ДЕРЖАВИ
- // ================================
-
-
-// ================================
-// ЧАСТИНА 3 — ЗАСНУВАННЯ ДЕРЖАВИ (FIX)
-// ================================
+// ======================================
+// ЧАСТИНА 3 — СТВОРЕННЯ ДЕРЖАВИ ГРАВЦЯ
+// ======================================
 
 (() => {
   const map = document.getElementById("worldMap");
-  const territories = document.getElementById("territories");
-  const settlements = document.getElementById("settlements");
-  const labels = document.getElementById("mapLabels");
+  const territoryLayer = document.getElementById("territories");
+  const settlementLayer = document.getElementById("settlements");
+  const labelLayer = document.getElementById("mapLabels");
 
-  const foundButton = document.getElementById("foundBtn");
-  const countryInput = document.getElementById("countryName");
+  const nameInput = document.getElementById("countryName");
   const capitalInput = document.getElementById("capitalName");
   const modal = document.getElementById("setupModal");
+  const foundButton = document.getElementById("foundBtn");
 
-  if (!map || !territories || !settlements || !labels ||
-      !foundButton || !countryInput || !capitalInput || !modal) {
-    console.error("Частина 3: не знайдено потрібні елементи HTML");
+  if (
+    !map ||
+    !territoryLayer ||
+    !settlementLayer ||
+    !labelLayer ||
+    !foundButton
+  ) {
+    console.error("Помилка: не знайдено елементи для створення держави");
     return;
   }
-
-  if (foundButton.dataset.foundingReady === "true") {
-    console.warn("Обробник заснування вже підключений");
-    return;
-  }
-  foundButton.dataset.foundingReady = "true";
 
   const NS = "http://www.w3.org/2000/svg";
-  const view = map.viewBox.baseVal;
-  const W = view.width || 1000;
-  const H = view.height || 700;
 
-  function svgElement(tag, attrs = {}) {
-    const el = document.createElementNS(NS, tag);
+  function createSvgElement(tag, attributes, parent) {
+    const element = document.createElementNS(NS, tag);
 
-    Object.entries(attrs).forEach(([key, value]) => {
-      el.setAttribute(key, value);
+    Object.entries(attributes).forEach(([key, value]) => {
+      element.setAttribute(key, String(value));
     });
 
-    return el;
+    if (parent) parent.appendChild(element);
+    return element;
   }
 
-  function message(text) {
-    if (typeof showMessage === "function") {
-      showMessage(text);
-      return;
+  function showFoundingError(message) {
+    if (typeof window.showMessage === "function") {
+      window.showMessage(message);
+    } else {
+      alert(message);
     }
-
-    let box = document.getElementById("foundingMessage");
-
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "foundingMessage";
-      document.body.appendChild(box);
-    }
-
-    box.textContent = text;
-    box.style.display = "block";
   }
 
-  function getPoint() {
-    const point = window.selectedLocation;
-
-    if (!point) return null;
-
-    const x = Number(point.x);
-    const y = Number(point.y);
-
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      return null;
-    }
-
-    return {
-      x: Math.max(20, Math.min(W - 20, x)),
-      y: Math.max(20, Math.min(H - 20, y))
-    };
-  }
-
-  function randomColor() {
-    const colors = [
-      "#d9a441", "#5998bd", "#75a66a",
-      "#a77ab8", "#cf765d", "#4ca6a0",
-      "#bd8dca", "#8b9c55"
+  function createPlayerTerritory(x, y, color) {
+    const points = [
+      [x - 75, y - 38],
+      [x - 35, y - 65],
+      [x + 35, y - 60],
+      [x + 75, y - 25],
+      [x + 65, y + 35],
+      [x + 20, y + 65],
+      [x - 45, y + 55],
+      [x - 80, y + 10]
     ];
 
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
+    const polygonPoints = points
+      .map(point => point.join(","))
+      .join(" ");
 
-  function createTerritory(x, y, color) {
-    const offsets = [
-      [-100,-55],[-55,-100],[15,-95],
-      [90,-60],[110,0],[75,70],
-      [10,100],[-75,75],[-110,10]
-    ];
-
-    const points = offsets.map(([dx, dy]) => {
-      const px = Math.max(5, Math.min(W - 5, x + dx));
-      const py = Math.max(5, Math.min(H - 5, y + dy));
-      return `${px},${py}`;
-    }).join(" ");
-
-    const polygon = svgElement("polygon", {
-      points,
+    return createSvgElement("polygon", {
+      points: polygonPoints,
       fill: color,
-      "fill-opacity": "0.30",
+      "fill-opacity": 0.42,
       stroke: color,
-      "stroke-width": "5",
+      "stroke-width": 3,
       "stroke-linejoin": "round",
-      class: "player-country-border"
-    });
-
-    territories.appendChild(polygon);
+      class: "player-territory"
+    }, territoryLayer);
   }
 
   function createCapital(x, y, name) {
-    const group = svgElement("g", {
-      transform: `translate(${x} ${y})`,
+    const group = createSvgElement("g", {
       class: "player-capital"
-    });
+    }, settlementLayer);
 
-    group.appendChild(svgElement("circle", {
-      cx: 0,
-      cy: 0,
-      r: 15,
-      fill: "#f5c542",
-      stroke: "#ffffff",
-      "stroke-width": "4"
-    }));
+    createSvgElement("circle", {
+      cx: x,
+      cy: y,
+      r: 12,
+      fill: "#facc15",
+      stroke: "#fff",
+      "stroke-width": 3
+    }, group);
 
-    group.appendChild(svgElement("circle", {
-      cx: 0,
-      cy: 0,
-      r: 5,
-      fill: "#513a12"
-    }));
+    createSvgElement("circle", {
+      cx: x,
+      cy: y,
+      r: 4,
+      fill: "#713f12"
+    }, group);
 
-    settlements.appendChild(group);
-
-    const label = svgElement("text", {
-      x: x + 20,
-      y: y - 18,
-      fill: "#fff2b2",
-      "font-size": "17",
+    const label = createSvgElement("text", {
+      x: x + 16,
+      y: y - 14,
+      fill: "#ffffff",
+      "font-size": 15,
       "font-weight": "bold",
+      stroke: "#111827",
+      "stroke-width": 3,
       "paint-order": "stroke",
-      stroke: "#18232d",
-      "stroke-width": "4"
-    });
-
-    label.textContent = "★ " + name;
-    labels.appendChild(label);
-  }
-
-  function createCountryName(x, y, name, color) {
-    const label = svgElement("text", {
-      x,
-      y: y + 135,
-      "text-anchor": "middle",
-      fill: color,
-      "font-size": "19",
-      "font-weight": "bold",
-      "paint-order": "stroke",
-      stroke: "#17212b",
-      "stroke-width": "5"
-    });
+      class: "capital-label"
+    }, group);
 
     label.textContent = name;
-    labels.appendChild(label);
+
+    return group;
   }
 
-  function finishFounding(name, capital, point, color) {
-    createTerritory(point.x, point.y, color);
-    createCapital(point.x, point.y, capital);
-    createCountryName(point.x, point.y, name, color);
+  function updatePlayerStats(country) {
+    const values = {
+      countryDisplay: country.name,
+      yearDisplay: "2016",
+      populationDisplay: "25 000",
+      treasuryDisplay: "15 000",
+      foodDisplay: "8 000",
+      woodDisplay: "5 000",
+      stoneDisplay: "3 000",
+      ironDisplay: "1 000"
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    });
+  }
+
+  function foundCountry() {
+    if (window.gameStarted) {
+      showFoundingError("Держава вже створена!");
+      return;
+    }
+
+    const name = nameInput
+      ? nameInput.value.trim()
+      : "";
+
+    const capital = capitalInput
+      ? capitalInput.value.trim()
+      : "";
+
+    if (name.length < 2) {
+      showFoundingError("Введи назву держави (мінімум 2 символи).");
+      return;
+    }
+
+    if (capital.length < 2) {
+      showFoundingError("Введи назву столиці (мінімум 2 символи).");
+      return;
+    }
+
+    const location = window.selectedLocation;
+
+    if (
+      !location ||
+      !Number.isFinite(Number(location.x)) ||
+      !Number.isFinite(Number(location.y))
+    ) {
+      showFoundingError("Спочатку обери місце на карті!");
+      return;
+    }
+
+    const x = Number(location.x);
+    const y = Number(location.y);
+
+    if (x < 0 || y < 0 || x > 1000 || y > 700) {
+      showFoundingError("Обране місце поза межами карти.");
+      return;
+    }
+
+    const color = "#38bdf8";
 
     const country = {
       id: "player_" + Date.now(),
       name,
       capital,
       color,
-      x: point.x,
-      y: point.y,
       year: 2016,
-      population: 100,
-      treasury: 10000,
-      food: 500,
-      wood: 300,
-      stone: 200,
-      iron: 100,
-      army: 0,
-      happiness: 75
+      population: 25000,
+      treasury: 15000,
+      food: 8000,
+      wood: 5000,
+      stone: 3000,
+      iron: 1000,
+      x,
+      y,
+      isPlayer: true
     };
 
-    window.playerCountry = country;
-    window.gameStarted = true;
-    window.selectedLocation = point;
+    try {
+      createPlayerTerritory(x, y, color);
+      createCapital(x, y, capital);
 
-    if (typeof selectedLocation !== "undefined") {
-      selectedLocation = point;
+      const countryLabel = createSvgElement("text", {
+        x,
+        y: y + 95,
+        fill: "#ffffff",
+        "font-size": 17,
+        "font-weight": "bold",
+        "text-anchor": "middle",
+        stroke: "#111827",
+        "stroke-width": 4,
+        "paint-order": "stroke",
+        class: "player-country-label"
+      }, labelLayer);
+
+      countryLabel.textContent = name;
+
+      window.playerCountry = country;
+      window.gameStarted = true;
+
+      if (Array.isArray(window.worldStates)) {
+        window.worldStates.push(country);
+      }
+
+      updatePlayerStats(country);
+
+      if (modal) {
+        modal.style.display = "none";
+      }
+
+      const marker = document.getElementById("mapMarkers");
+      if (marker) marker.innerHTML = "";
+
+      window.selectedLocation = null;
+
+      window.dispatchEvent(new CustomEvent("countryFounded", {
+        detail: country
+      }));
+
+      showFoundingError("Державу «" + name + "» успішно створено!");
+
+      console.log("Державу створено:", country);
+
+    } catch (error) {
+      console.error("Помилка створення держави:", error);
+      showFoundingError("Не вдалося створити державу. Перевір консоль.");
     }
-
-    const display = document.getElementById("countryDisplay");
-    if (display) display.textContent = name;
-
-    const year = document.getElementById("yearDisplay");
-    if (year) year.textContent = "2016";
-
-    const population = document.getElementById("populationDisplay");
-    if (population) population.textContent = "100";
-
-    const treasury = document.getElementById("treasuryDisplay");
-    if (treasury) treasury.textContent = "10000 ₴";
-
-    const food = document.getElementById("foodDisplay");
-    if (food) food.textContent = "500";
-
-    const wood = document.getElementById("woodDisplay");
-    if (wood) wood.textContent = "300";
-
-    const stone = document.getElementById("stoneDisplay");
-    if (stone) stone.textContent = "200";
-
-    const iron = document.getElementById("ironDisplay");
-    if (iron) iron.textContent = "100";
-
-    modal.style.display = "none";
-
-    message("🏛 Державу «" + name + "» засновано!");
-
-    window.dispatchEvent(new CustomEvent("countryFounded", {
-      detail: country
-    }));
-
-    console.log("Державу створено:", country);
   }
 
-  foundButton.addEventListener("click", function(event) {
-    event.preventDefault();
+  foundButton.addEventListener("click", foundCountry);
 
-    if (window.gameStarted) {
-      message("Держава вже заснована!");
-      return;
-    }
-
-    const name = countryInput.value.trim();
-    const capital = capitalInput.value.trim();
-
-    if (!name) {
-      message("Введи назву держави!");
-      countryInput.focus();
-      return;
-    }
-
-    if (!capital) {
-      message("Введи назву столиці!");
-      capitalInput.focus();
-      return;
-    }
-
-    const point = getPoint();
-
-    if (!point) {
-      message("Спочатку постав мітку на карті!");
-      return;
-    }
-
-    const color = randomColor();
-
-    try {
-      finishFounding(name, capital, point, color);
-    } catch (error) {
-      console.error("Помилка заснування держави:", error);
-      message("Не вдалося заснувати державу. Перевір консоль.");
-    }
-  });
-
-  console.log("Частина 3 завантажена: кнопка заснування активна");
+  console.log("Частина 3 завантажена успішно");
 })();
 
+// ======================================
+// ДАЛІ ВСТАВИТИ ЧАСТИНУ 4
+// НЕ ЗАКРИВАТИ SCRIPT!
+// ======================================
 
-// ===================================
-// ЧАСТИНА 4 — РОЗВИТОК МІСТ ТА ЕКОНОМІКА
-// ===================================
+// ======================================
+// ЧАСТИНА 5 — ЕКОНОМІКА ТА РОЗВИТОК
+// ======================================
 
 (() => {
-  const map = document.getElementById("worldMap");
-  const settlements = document.getElementById("settlements");
-  const roads = document.getElementById("roads");
-  const labels = document.getElementById("mapLabels");
+  let developmentTimer = null;
+  let autoDevelopment = true;
+  let ticks = 0;
 
-  if (!map || !settlements || !roads || !labels) {
-    console.error("Не знайдено шари для розвитку міст");
-    return;
-  }
+  const panel = document.createElement("section");
+  panel.id = "economyPanel";
 
-  const ns = "http://www.w3.org/2000/svg";
-  const vb = map.viewBox.baseVal;
-  const W = vb.width || 1000;
-  const H = vb.height || 700;
+  panel.style.cssText = `
+    background:#1b2b3b;
+    border:1px solid #38516a;
+    border-radius:12px;
+    padding:14px;
+    margin:12px;
+    color:#f1f5f9;
+  `;
 
-  const cityStyle = document.createElement("style");
-  cityStyle.textContent = `
-    .city-building {
-      stroke: #302a23;
-      stroke-width: 1.5;
+  panel.innerHTML = `
+    <h3 style="margin:0 0 12px">🏛 Розвиток держави</h3>
+
+    <div id="economyStatus" style="margin-bottom:12px">
+      Очікування створення держави...
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="nextYearBtn">⏩ Наступний рік</button>
+      <button id="autoDevelopmentBtn">⏸ Зупинити розвиток</button>
+      <button id="buildFarmBtn">🌾 Побудувати ферму</button>
+      <button id="buildHouseBtn">🏠 Побудувати будинок</button>
+    </div>
+
+    <div id="buildingList" style="margin-top:12px">
+      🏗 Будівлі: ще немає
+    </div>
+
+    <div id="economyLog" style="
+      margin-top:12px;
+      padding:9px;
+      background:#101923;
+      border-radius:8px;
+      min-height:45px;
+    ">Історія подій з'явиться тут.</div>
+  `;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #economyPanel button {
+      background:#2563a6;
+      color:white;
+      border:0;
+      border-radius:7px;
+      padding:9px 11px;
+      cursor:pointer;
+      font-weight:bold;
     }
-    .city-smoke {
-      fill: #e9edf0;
-      opacity: .35;
-      animation: citySmoke 3s ease-in-out infinite;
-    }
-    .city-pulse {
-      fill: none;
-      stroke: #f5d17b;
-      stroke-width: 2;
-      animation: cityPulse 2.5s ease-out infinite;
-      transform-box: fill-box;
-      transform-origin: center;
-    }
-    @keyframes citySmoke {
-      0%,100% { opacity: .12; transform: translateY(0); }
-      50% { opacity: .5; transform: translateY(-7px); }
-    }
-    @keyframes cityPulse {
-      0% { opacity: .8; transform: scale(.7); }
-      100% { opacity: 0; transform: scale(2.2); }
+    #economyPanel button:active {
+      transform:scale(.97);
     }
   `;
-  document.head.appendChild(cityStyle);
+  document.head.appendChild(style);
 
-  function el(tag, attrs) {
-    const node = document.createElementNS(ns, tag);
-    Object.entries(attrs).forEach(([key, value]) => {
-      node.setAttribute(key, value);
-    });
-    return node;
+  const sidebar =
+    document.querySelector("aside") ||
+    document.querySelector(".sidebar") ||
+    document.querySelector("main");
+
+  if (sidebar) {
+    sidebar.appendChild(panel);
+  } else {
+    document.body.appendChild(panel);
   }
+
+  const status = document.getElementById("economyStatus");
+  const log = document.getElementById("economyLog");
+  const buildingList = document.getElementById("buildingList");
+
+  const buildings = {
+    farm: 0,
+    house: 0
+  };
 
   function getCountry() {
     return window.playerCountry || null;
   }
 
-  function makeCity(x, y, name, size) {
-    const group = el("g", {
-      transform: `translate(${x} ${y})`,
-      class: "developing-city"
-    });
+  function updateStats() {
+    const country = getCountry();
+    if (!country) return;
 
-    group.appendChild(el("circle", {
-      cx: 0, cy: 0, r: 19 + size * 2,
-      class: "city-pulse"
-    }));
-
-    const houseCount = Math.min(12, 3 + size * 2);
-
-    for (let i = 0; i < houseCount; i++) {
-      const angle = i * 2.4;
-      const radius = 8 + (i % 3) * 8;
-      const hx = Math.cos(angle) * radius;
-      const hy = Math.sin(angle) * radius;
-
-      group.appendChild(el("rect", {
-        x: hx - 4,
-        y: hy - 4,
-        width: 9,
-        height: 8,
-        rx: 1,
-        fill: ["#bd8755", "#d5b16e", "#a96f51"][i % 3],
-        class: "city-building"
-      }));
-
-      group.appendChild(el("polygon", {
-        points: `${hx-5},${hy-4} ${hx},${hy-10} ${hx+5},${hy-4}`,
-        fill: "#713f32",
-        class: "city-building"
-      }));
-    }
-
-    group.appendChild(el("circle", {
-      cx: 5, cy: -15, r: 2,
-      class: "city-smoke"
-    }));
-
-    group.appendChild(el("circle", {
-      cx: 8, cy: -20, r: 3,
-      class: "city-smoke"
-    }));
-
-    settlements.appendChild(group);
-
-    const label = el("text", {
-      x: x,
-      y: y + 37,
-      "text-anchor": "middle",
-      fill: "#ffffff",
-      "font-size": "13",
-      "font-weight": "bold",
-      "paint-order": "stroke",
-      stroke: "#17212b",
-      "stroke-width": "4"
-    });
-
-    label.textContent = name;
-    labels.appendChild(label);
-
-    return group;
-  }
-
-  function connectCities(a, b) {
-    const line = el("path", {
-      d: `M ${a.x} ${a.y} L ${b.x} ${b.y}`,
-      fill: "none",
-      stroke: "#c4a77b",
-      "stroke-width": "4",
-      "stroke-linecap": "round",
-      "stroke-dasharray": "2 3",
-      opacity: ".9"
-    });
-
-    roads.appendChild(line);
-  }
-
-  const initialCities = [
-    {name: "Берегове", x: .17, y: .43},
-    {name: "Лісоград", x: .42, y: .51},
-    {name: "Златопіль", x: .73, y: .37}
-  ];
-
-  window.cityWorld = window.cityWorld || [];
-
-  initialCities.forEach((city, index) => {
-    const item = {
-      name: city.name,
-      x: city.x * W,
-      y: city.y * H,
-      population: 350 + index * 120,
-      level: 1,
-      houses: 3,
-      isPlayerCity: false
+    const values = {
+      countryDisplay: country.name,
+      yearDisplay: country.year,
+      populationDisplay: country.population.toLocaleString("uk-UA"),
+      treasuryDisplay: country.treasury.toLocaleString("uk-UA"),
+      foodDisplay: country.food.toLocaleString("uk-UA"),
+      woodDisplay: country.wood.toLocaleString("uk-UA"),
+      stoneDisplay: country.stone.toLocaleString("uk-UA"),
+      ironDisplay: country.iron.toLocaleString("uk-UA")
     };
 
-    window.cityWorld.push(item);
-    makeCity(item.x, item.y, item.name, item.level);
-  });
-
-  function initializePlayerEconomy() {
-    const country = getCountry();
-    if (!country || country.economyInitialized) return;
-
-    country.food = 500;
-    country.wood = 300;
-    country.stone = 200;
-    country.iron = 50;
-    country.population = country.population || 1000;
-    country.treasury = country.treasury || 50000;
-    country.buildings = {
-      houses: 5,
-      farms: 2,
-      sawmills: 1,
-      quarries: 1
-    };
-    country.economyInitialized = true;
-
-    window.cityWorld.push({
-      name: country.capital,
-      x: country.x,
-      y: country.y,
-      population: country.population,
-      level: 2,
-      houses: 5,
-      isPlayerCity: true
+    Object.entries(values).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
     });
 
-    makeCity(country.x, country.y, country.capital, 2);
+    status.textContent =
+      "📅 " + country.year +
+      " рік | 👥 " + country.population.toLocaleString("uk-UA") +
+      " жителів | 💰 " + country.treasury.toLocaleString("uk-UA");
   }
 
-  function developPlayerCountry() {
-    const country = getCountry();
-    if (!country || !country.economyInitialized) return;
+  function addLog(message) {
+    const time = new Date().toLocaleTimeString("uk-UA", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-    const buildings = country.buildings;
-
-    country.food += buildings.farms * 8;
-    country.wood += buildings.sawmills * 5;
-    country.stone += buildings.quarries * 4;
-    country.population += Math.max(1, Math.floor(
-      country.population * 0.002
-    ));
-
-    country.treasury += Math.floor(country.population * 0.01);
-
-    if (country.food > country.population * 0.1) {
-      country.population += Math.floor(country.population * 0.001);
-    }
+    log.textContent = time + " — " + message;
   }
 
-  window.buildCityBuilding = function(type) {
+  function updateBuildings() {
+    buildingList.textContent =
+      "🌾 Ферми: " + buildings.farm +
+      " | 🏠 Будинки: " + buildings.house;
+  }
+
+  function advanceYear() {
     const country = getCountry();
 
-    if (!country || !country.economyInitialized) {
-      return "Спочатку заснуй державу!";
-    }
-
-    const prices = {
-      houses: {wood: 30, stone: 10},
-      farms: {wood: 40, stone: 10},
-      sawmills: {wood: 50, stone: 20},
-      quarries: {wood: 30, stone: 30}
-    };
-
-    const price = prices[type];
-
-    if (!price) return "Невідомий тип будівлі";
-
-    if (country.wood < price.wood || country.stone < price.stone) {
-      return "Недостатньо ресурсів!";
-    }
-
-    country.wood -= price.wood;
-    country.stone -= price.stone;
-    country.buildings[type] += 1;
-
-    return "Будівлю успішно зведено!";
-  };
-
-  window.addNewCity = function(name, x, y) {
-    const country = getCountry();
-
-    if (!country || !country.economyInitialized) {
-      return "Спочатку заснуй державу!";
-    }
-
-    if (!name || !Number.isFinite(x) || !Number.isFinite(y)) {
-      return "Перевір назву та координати міста";
-    }
-
-    const city = {
-      name: name,
-      x: Math.max(10, Math.min(W - 10, x)),
-      y: Math.max(10, Math.min(H - 10, y)),
-      population: 100,
-      level: 1,
-      houses: 2,
-      isPlayerCity: true
-    };
-
-    const previous = window.cityWorld.find(c => c.isPlayerCity);
-
-    window.cityWorld.push(city);
-    makeCity(city.x, city.y, city.name, city.level);
-
-    if (previous) connectCities(previous, city);
-
-    country.cities.push(name);
-    return "Нове місто засновано!";
-  };
-
-  function runCityDevelopment() {
-    initializePlayerEconomy();
-    developPlayerCountry();
-
-    window.cityWorld.forEach(city => {
-      city.population += Math.max(
-        1,
-        Math.floor(city.population * 0.001)
-      );
-
-      if (city.population > 1000 && city.level < 3) {
-        city.level++;
-        city.houses += 2;
-        makeCity(city.x, city.y, city.name, city.level);
-      }
-    });
-  }
-
-  window.runCityDevelopment = runCityDevelopment;
-
-  console.log("Частина 4 завантажена");
-})();
-
-// ===================================
-// ЧАСТИНА 5 — ПОЛІТИКА, ТОРГІВЛЯ, ДИПЛОМАТІЯ
-// ===================================
-
-(() => {
-  const country = () => window.playerCountry || null;
-
-  window.worldDiplomacy = window.worldDiplomacy || {};
-  window.worldTradeHistory = window.worldTradeHistory || [];
-  window.worldEvents = window.worldEvents || [];
-
-  function notifyWorld(message) {
-    window.worldEvents.unshift({
-      message,
-      date: new Date().toLocaleString("uk-UA")
-    });
-
-    window.worldEvents = window.worldEvents.slice(0, 50);
-
-    let panel = document.getElementById("worldEventPanel");
-
-    if (!panel) {
-      panel = document.createElement("div");
-      panel.id = "worldEventPanel";
-      panel.style.cssText =
-        "position:fixed;right:12px;bottom:12px;z-index:9000;" +
-        "width:min(340px,90vw);max-height:190px;overflow:auto;" +
-        "background:#182838;color:#fff;border:1px solid #526a7e;" +
-        "border-radius:12px;padding:10px;font:13px Arial";
-      document.body.appendChild(panel);
-    }
-
-    panel.innerHTML = "<b>Останні події</b>";
-
-    window.worldEvents.slice(0, 5).forEach(event => {
-      const line = document.createElement("div");
-      line.style.cssText = "padding:6px 0;border-bottom:1px solid #405365";
-      line.textContent = event.message;
-      panel.appendChild(line);
-    });
-  }
-
-  function getOtherCountries() {
-    return (window.worldStates || []).map(state => ({
-      id: state.id,
-      name: state.name,
-      population: state.population,
-      relations: window.worldDiplomacy[state.id] || 0
-    }));
-  }
-
-  window.getDiplomacy = function() {
-    return getOtherCountries();
-  };
-
-  window.changeDiplomacy = function(stateId, amount) {
-    const state = (window.worldStates || []).find(
-      item => item.id === Number(stateId)
-    );
-
-    if (!state) return "Державу не знайдено";
-
-    const current = window.worldDiplomacy[state.id] || 0;
-    const next = Math.max(-100, Math.min(100, current + amount));
-
-    window.worldDiplomacy[state.id] = next;
-
-    if (amount > 0) {
-      notifyWorld("Відносини з державою «" + state.name + "» покращилися.");
-    } else {
-      notifyWorld("Відносини з державою «" + state.name + "» погіршилися.");
-    }
-
-    return "Новий рівень відносин: " + next;
-  };
-
-  window.createAlliance = function(stateId) {
-    const state = (window.worldStates || []).find(
-      item => item.id === Number(stateId)
-    );
-
-    if (!state) return "Державу не знайдено";
-
-    if ((window.worldDiplomacy[state.id] || 0) < 30) {
-      return "Спочатку покращи дипломатичні відносини до +30";
-    }
-
-    window.worldDiplomacy[state.id] = 100;
-    notifyWorld("Укладено союз із державою «" + state.name + "»!");
-
-    return "Союз укладено!";
-  };
-
-  window.tradeResources = function(resource, amount, direction) {
-    const player = country();
-
-    if (!player || !player.economyInitialized) {
-      return "Спочатку заснуй державу!";
-    }
-
-    const allowed = ["food", "wood", "stone", "iron"];
-    const quantity = Math.floor(Number(amount));
-
-    if (!allowed.includes(resource)) {
-      return "Невідомий ресурс";
-    }
-
-    if (!Number.isFinite(quantity) || quantity < 1 || quantity > 1000) {
-      return "Кількість має бути від 1 до 1000";
-    }
-
-    const prices = {
-      food: 3,
-      wood: 7,
-      stone: 8,
-      iron: 15
-    };
-
-    const price = prices[resource];
-
-    if (direction === "sell") {
-      if (player[resource] < quantity) {
-        return "Недостатньо ресурсу для продажу";
-      }
-
-      player[resource] -= quantity;
-      player.treasury += quantity * price;
-    } else if (direction === "buy") {
-      const total = quantity * price;
-
-      if (player.treasury < total) {
-        return "Недостатньо грошей";
-      }
-
-      player.treasury -= total;
-      player[resource] += quantity;
-    } else {
-      return "Невідомий напрямок торгівлі";
-    }
-
-    window.worldTradeHistory.unshift({
-      resource,
-      amount: quantity,
-      direction,
-      total: quantity * price
-    });
-
-    window.worldTradeHistory =
-      window.worldTradeHistory.slice(0, 30);
-
-    notifyWorld(
-      (direction === "sell" ? "Продано " : "Куплено ") +
-      quantity + " од. ресурсу: " + resource
-    );
-
-    return "Торгівлю завершено. Сума: " + quantity * price + " ₴";
-  };
-
-  window.setTaxRate = function(rate) {
-    const player = country();
-
-    if (!player || !player.economyInitialized) {
-      return "Спочатку заснуй державу!";
-    }
-
-    const value = Number(rate);
-
-    if (!Number.isFinite(value) || value < 0 || value > 30) {
-      return "Податок має бути від 0 до 30%";
-    }
-
-    player.taxRate = value;
-
-    notifyWorld("Податкову ставку встановлено на " + value + "%.");
-
-    return "Нову ставку податку встановлено!";
-  };
-
-  window.collectTaxes = function() {
-    const player = country();
-
-    if (!player || !player.economyInitialized) {
-      return "Спочатку заснуй державу!";
-    }
-
-    const rate = player.taxRate ?? 10;
-    const income = Math.floor(
-      player.population * rate * 0.08
-    );
-
-    player.treasury += income;
-
-    notifyWorld("Казна отримала " + income + " ₴ податків.");
-
-    return "До казни надійшло " + income + " ₴";
-  };
-
-  function developBotCountries() {
-    (window.worldStates || []).forEach(state => {
-      const growth = Math.max(
-        10,
-        Math.floor(state.population * 0.001)
-      );
-
-      state.population += growth;
-
-      state.economy = state.economy || {
-        treasury: 10000,
-        industry: 1,
-        development: 1
-      };
-
-      state.economy.treasury += Math.floor(growth * 2);
-
-      if (Math.random() < 0.08) {
-        state.economy.development++;
-        notifyWorld(
-          "Держава «" + state.name + "» розвиває економіку."
-        );
-      }
-    });
-  }
-
-  window.developBotCountries = developBotCountries;
-
-  window.getCountryStatistics = function() {
-    const player = country();
-
-    if (!player) return null;
-
-    return {
-      name: player.name,
-      capital: player.capital,
-      population: player.population,
-      treasury: player.treasury,
-      food: player.food,
-      wood: player.wood,
-      stone: player.stone,
-      iron: player.iron,
-      taxRate: player.taxRate ?? 10,
-      cities: player.cities || []
-    };
-  };
-
-  console.log("Частина 5 завантажена");
-})();
-
-// ===================================
-// ЧАСТИНА 6 — ІНТЕРФЕЙС, ЗБЕРЕЖЕННЯ ТА ІГРОВИЙ ЧАС
-// ===================================
-
-(() => {
-  if (window.finalGamePartLoaded) return;
-  window.finalGamePartLoaded = true;
-
-  const SAVE_KEY = "fictional_world_strategy_save_v1";
-
-  let paused = false;
-  let gameMonth = 1;
-  let gameYear = 2016;
-  let gameTimer = null;
-
-  const style = document.createElement("style");
-  style.textContent = `
-    #gameControlPanel {
-      position:fixed;
-      z-index:5000;
-      top:12px;
-      right:12px;
-      width:min(310px, calc(100vw - 24px));
-      max-height:calc(100vh - 24px);
-      overflow-y:auto;
-      background:#142435;
-      color:#f1f5f9;
-      border:1px solid #50677d;
-      border-radius:14px;
-      padding:13px;
-      box-shadow:0 5px 24px #0008;
-      font:14px Arial,sans-serif;
-    }
-    #gameControlPanel h3 {
-      margin:5px 0 10px;
-      font-size:17px;
-    }
-    #gameControlPanel .game-section {
-      border-top:1px solid #405468;
-      margin-top:10px;
-      padding-top:9px;
-    }
-    #gameControlPanel button {
-      background:#315878;
-      color:white;
-      border:1px solid #6386a3;
-      border-radius:8px;
-      padding:9px;
-      margin:3px 2px;
-      font-weight:bold;
-      cursor:pointer;
-    }
-    #gameControlPanel button:active {
-      transform:scale(.97);
-    }
-    #gameControlPanel button:disabled {
-      opacity:.5;
-    }
-    #gameControlPanel input,
-    #gameControlPanel select {
-      width:100%;
-      padding:9px;
-      margin:4px 0;
-      border-radius:7px;
-      border:1px solid #647b90;
-      background:#e9f0f6;
-      color:#142435;
-      box-sizing:border-box;
-    }
-    #gameControlPanel .game-stat {
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      padding:4px 0;
-    }
-    #gameControlPanel .game-message {
-      min-height:18px;
-      color:#f5d17b;
-      padding-top:5px;
-    }
-    @media(max-width:650px) {
-      #gameControlPanel {
-        top:auto;
-        bottom:8px;
-        right:8px;
-        width:min(280px, calc(100vw - 16px));
-        max-height:48vh;
-        font-size:12px;
-      }
-      #gameControlPanel button {
-        padding:8px 6px;
-        font-size:12px;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-
-  const panel = document.createElement("section");
-  panel.id = "gameControlPanel";
-  panel.innerHTML = `
-    <h3>🏛️ Керування державою</h3>
-    <div id="gameClock">📅 2016 рік · Січень</div>
-
-    <div class="game-section">
-      <b id="gameCountryName">Держава ще не заснована</b>
-      <div class="game-stat"><span>Населення</span><b id="statPopulation">—</b></div>
-      <div class="game-stat"><span>Казна</span><b id="statTreasury">—</b></div>
-      <div class="game-stat"><span>Їжа</span><b id="statFood">—</b></div>
-      <div class="game-stat"><span>Деревина</span><b id="statWood">—</b></div>
-      <div class="game-stat"><span>Камінь</span><b id="statStone">—</b></div>
-      <div class="game-stat"><span>Залізо</span><b id="statIron">—</b></div>
-    </div>
-
-    <div class="game-section">
-      <b>🏗️ Будівництво</b>
-      <button data-build="houses">Будинок</button>
-      <button data-build="farms">Ферма</button>
-      <button data-build="sawmills">Лісопилка</button>
-      <button data-build="quarries">Кар'єр</button>
-    </div>
-
-    <div class="game-section">
-      <b>💰 Торгівля</b>
-      <select id="tradeResource">
-        <option value="food">Їжа</option>
-        <option value="wood">Деревина</option>
-        <option value="stone">Камінь</option>
-        <option value="iron">Залізо</option>
-      </select>
-      <input id="tradeAmount" type="number" min="1" max="1000" value="10">
-      <button id="buyResource">Купити</button>
-      <button id="sellResource">Продати</button>
-    </div>
-
-    <div class="game-section">
-      <b>🌍 Дипломатія</b>
-      <select id="diplomacyCountry"></select>
-      <button id="improveRelations">Покращити відносини</button>
-      <button id="makeAlliance">Запропонувати союз</button>
-    </div>
-
-    <div class="game-section">
-      <b>🏛️ Податки</b>
-      <input id="taxInput" type="number" min="0" max="30" value="10">
-      <button id="setTax">Встановити податок</button>
-      <button id="collectTax">Зібрати податки</button>
-    </div>
-
-    <div class="game-section">
-      <button id="pauseGame">⏸️ Пауза</button>
-      <button id="saveGame">💾 Зберегти</button>
-      <button id="loadGame">📂 Завантажити</button>
-    </div>
-
-    <div class="game-message" id="gameMessage"></div>
-  `;
-
-  document.body.appendChild(panel);
-
-  const $ = id => document.getElementById(id);
-
-  function message(text) {
-    $("gameMessage").textContent = text;
-  }
-
-  function getPlayer() {
-    return window.playerCountry || null;
-  }
-
-  function formatNumber(value) {
-    return Number(value || 0).toLocaleString("uk-UA");
-  }
-
-  function updateStatistics() {
-    const player = getPlayer();
-
-    if (!player) {
-      $("gameCountryName").textContent = "Держава ще не заснована";
+    if (!country) {
+      addLog("Спочатку створи державу.");
       return;
     }
 
-    $("gameCountryName").textContent =
-      "🏳️ " + player.name + " · " + player.capital;
+    country.year += 1;
+    ticks += 1;
 
-    $("statPopulation").textContent = formatNumber(player.population);
-    $("statTreasury").textContent =
-      formatNumber(player.treasury) + " ₴";
-    $("statFood").textContent = formatNumber(player.food);
-    $("statWood").textContent = formatNumber(player.wood);
-    $("statStone").textContent = formatNumber(player.stone);
-    $("statIron").textContent = formatNumber(player.iron);
+    const farmProduction = buildings.farm * 180;
+    const houseGrowth = buildings.house * 35;
+
+    const taxIncome = Math.floor(country.population * 0.08);
+
+    country.food += 350 + farmProduction;
+    country.wood += 45 + buildings.farm * 5;
+    country.stone += 25;
+    country.iron += 10;
+    country.treasury += 200 + taxIncome;
+
+    country.food -= Math.floor(country.population * 0.025);
+
+    country.population +=
+      30 +
+      houseGrowth +
+      Math.floor(buildings.farm * 8);
+
+    if (country.food < 0) {
+      country.food = 0;
+      country.population = Math.max(
+        100,
+        country.population - 50
+      );
+      addLog("⚠️ Нестача їжі сповільнила розвиток.");
+    } else {
+      addLog("📈 Настав " + country.year + " рік. Держава розвивається.");
+    }
+
+    updateStats();
   }
 
-  function updateDiplomacyList() {
-    const select = $("diplomacyCountry");
-    const previous = select.value;
+  function build(type) {
+    const country = getCountry();
 
-    select.innerHTML = "";
+    if (!country) {
+      addLog("Спочатку створи державу.");
+      return;
+    }
 
-    (window.worldStates || []).forEach(state => {
-      const option = document.createElement("option");
-      option.value = state.id;
-      option.textContent = state.name;
-      select.appendChild(option);
-    });
-
-    if (previous) select.value = previous;
-  }
-
-  function currentMonthName() {
-    const months = [
-      "Січень", "Лютий", "Березень", "Квітень",
-      "Травень", "Червень", "Липень", "Серпень",
-      "Вересень", "Жовтень", "Листопад", "Грудень"
-    ];
-
-    return months[gameMonth - 1];
-  }
-
-  function updateClock() {
-    $("gameClock").textContent =
-      "📅 " + gameYear + " рік · " + currentMonthName();
-  }
-
-  function advanceTime() {
-    if (paused) return;
-
-    gameMonth++;
-
-    if (gameMonth > 12) {
-      gameMonth = 1;
-      gameYear++;
-
-      if (getPlayer()) {
-        getPlayer().year = gameYear;
+    if (type === "farm") {
+      if (country.wood < 120 || country.treasury < 250) {
+        addLog("Не вистачає дерева або золота для ферми.");
+        return;
       }
 
-      message("Настав новий рік: " + gameYear);
+      country.wood -= 120;
+      country.treasury -= 250;
+      buildings.farm += 1;
+
+      addLog("🌾 Побудовано нову ферму.");
     }
 
-    if (typeof window.runCityDevelopment === "function") {
-      window.runCityDevelopment();
+    if (type === "house") {
+      if (country.wood < 80 || country.stone < 40 ||
+          country.treasury < 150) {
+        addLog("Не вистачає ресурсів для будинку.");
+        return;
+      }
+
+      country.wood -= 80;
+      country.stone -= 40;
+      country.treasury -= 150;
+      buildings.house += 1;
+
+      addLog("🏠 Побудовано новий будинок.");
     }
 
-    if (typeof window.developBotCountries === "function") {
-      window.developBotCountries();
-    }
+    updateBuildings();
+    updateStats();
+  }
 
-    updateClock();
-    updateStatistics();
+  function startDevelopment() {
+    if (developmentTimer) return;
+
+    developmentTimer = setInterval(() => {
+      if (!window.gameStarted || !getCountry()) return;
+
+      if (autoDevelopment) {
+        advanceYear();
+      }
+    }, 12000);
+  }
+
+  document.getElementById("nextYearBtn").addEventListener(
+    "click",
+    advanceYear
+  );
+
+  document.getElementById("autoDevelopmentBtn").addEventListener(
+    "click",
+    () => {
+      autoDevelopment = !autoDevelopment;
+
+      document.getElementById("autoDevelopmentBtn").textContent =
+        autoDevelopment
+          ? "⏸ Зупинити розвиток"
+          : "▶️ Увімкнути розвиток";
+
+      addLog(
+        autoDevelopment
+          ? "Автоматичний розвиток увімкнено."
+          : "Автоматичний розвиток зупинено."
+      );
+    }
+  );
+
+  document.getElementById("buildFarmBtn").addEventListener(
+    "click",
+    () => build("farm")
+  );
+
+  document.getElementById("buildHouseBtn").addEventListener(
+    "click",
+    () => build("house")
+  );
+
+  window.addEventListener("countryFounded", () => {
+    updateStats();
+    updateBuildings();
+    startDevelopment();
+    addLog("Держава почала розвиватися!");
+  });
+
+  if (window.gameStarted && getCountry()) {
+    updateStats();
+    updateBuildings();
+    startDevelopment();
+  }
+
+  console.log("Частина 5 завантажена успішно");
+})();
+
+// ======================================
+// ДАЛІ ВСТАВИТИ ЧАСТИНУ 6
+// НЕ ЗАКРИВАТИ SCRIPT!
+// ======================================
+
+// ======================================
+// ЧАСТИНА 6 — ЗБЕРЕЖЕННЯ ТА ЗАВЕРШЕННЯ
+// ======================================
+
+(() => {
+  const SAVE_KEY = "world_states_game_2016_save_v1";
+
+  const savePanel = document.createElement("section");
+  savePanel.id = "savePanel";
+
+  savePanel.style.cssText = `
+    background:#1b2b3b;
+    border:1px solid #38516a;
+    border-radius:12px;
+    padding:14px;
+    margin:12px;
+    color:#f1f5f9;
+  `;
+
+  savePanel.innerHTML = `
+    <h3 style="margin:0 0 12px">💾 Збереження гри</h3>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="saveGameBtn">💾 Зберегти</button>
+      <button id="loadGameBtn">📂 Завантажити</button>
+      <button id="resetGameBtn">🔄 Нова гра</button>
+    </div>
+
+    <div id="saveStatus" style="
+      margin-top:12px;
+      padding:9px;
+      background:#101923;
+      border-radius:8px;
+    ">Гра ще не збережена.</div>
+  `;
+
+  const saveStyle = document.createElement("style");
+  saveStyle.textContent = `
+    #savePanel button {
+      background:#2563a6;
+      color:white;
+      border:0;
+      border-radius:7px;
+      padding:9px 11px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+    #savePanel button:active {
+      transform:scale(.97);
+    }
+  `;
+
+  document.head.appendChild(saveStyle);
+
+  const target =
+    document.querySelector("aside") ||
+    document.querySelector(".sidebar") ||
+    document.querySelector("main");
+
+  if (target) {
+    target.appendChild(savePanel);
+  } else {
+    document.body.appendChild(savePanel);
+  }
+
+  const saveStatus = document.getElementById("saveStatus");
+
+  function getBuildings() {
+    return window.gameBuildings || {
+      farm: 0,
+      house: 0
+    };
   }
 
   function saveGame() {
-    const data = {
-      version: 1,
-      gameMonth,
-      gameYear,
-      playerCountry: window.playerCountry || null,
-      worldStates: window.worldStates || [],
-      worldDiplomacy: window.worldDiplomacy || {},
-      cityWorld: window.cityWorld || [],
-      worldTradeHistory: window.worldTradeHistory || [],
-      worldEvents: window.worldEvents || []
-    };
-
     try {
+      const data = {
+        gameStarted: window.gameStarted,
+        playerCountry: window.playerCountry,
+        worldStates: window.worldStates,
+        worldResources: window.worldResources,
+        selectedLocation: window.selectedLocation
+      };
+
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-      message("Гру успішно збережено!");
+
+      saveStatus.textContent =
+        "✅ Гру збережено: " +
+        new Date().toLocaleTimeString("uk-UA");
+
     } catch (error) {
       console.error("Помилка збереження:", error);
-      message("Не вдалося зберегти гру на цьому пристрої.");
+      saveStatus.textContent =
+        "❌ Не вдалося зберегти гру.";
     }
-  }
-
-  function drawRestoredCountry(player) {
-    if (!player) return;
-
-    const map = $("worldMap");
-    const territories = $("territories");
-    const settlements = $("settlements");
-    const labels = $("mapLabels");
-
-    if (!map || !territories || !settlements || !labels) return;
-
-    const ns = "http://www.w3.org/2000/svg";
-
-    const border = document.createElementNS(ns, "polygon");
-    const coords = [
-      [-100,-55],[-55,-100],[15,-95],[90,-60],
-      [110,0],[75,70],[10,100],[-75,75],[-110,10]
-    ];
-
-    border.setAttribute("points", coords.map(([dx, dy]) =>
-      (player.x + dx) + "," + (player.y + dy)
-    ).join(" "));
-
-    border.setAttribute("fill", player.color || "#e3a342");
-    border.setAttribute("fill-opacity", ".28");
-    border.setAttribute("stroke", player.color || "#e3a342");
-    border.setAttribute("stroke-width", "4");
-    territories.appendChild(border);
-
-    const capital = document.createElementNS(ns, "circle");
-    capital.setAttribute("cx", player.x);
-    capital.setAttribute("cy", player.y);
-    capital.setAttribute("r", "12");
-    capital.setAttribute("fill", "#f5c542");
-    capital.setAttribute("stroke", "#fff");
-    capital.setAttribute("stroke-width", "3");
-    settlements.appendChild(capital);
-
-    const label = document.createElementNS(ns, "text");
-    label.setAttribute("x", player.x + 17);
-    label.setAttribute("y", player.y - 15);
-    label.setAttribute("fill", "#fff2b2");
-    label.setAttribute("font-size", "15");
-    label.setAttribute("font-weight", "bold");
-    label.setAttribute("paint-order", "stroke");
-    label.setAttribute("stroke", "#18232d");
-    label.setAttribute("stroke-width", "4");
-    label.textContent = "★ " + player.capital;
-    labels.appendChild(label);
   }
 
   function loadGame() {
@@ -1672,165 +1397,111 @@ console.log("Частина 1 завантажена");
       const raw = localStorage.getItem(SAVE_KEY);
 
       if (!raw) {
-        message("Збереження не знайдено.");
+        saveStatus.textContent = "Збереження не знайдено.";
         return;
       }
 
       const data = JSON.parse(raw);
 
-      if (!data || data.version !== 1) {
-        message("Формат збереження не підтримується.");
-        return;
+      if (!data || typeof data !== "object") {
+        throw new Error("Некоректне збереження");
       }
 
-      gameMonth = Math.max(1, Math.min(12, Number(data.gameMonth) || 1));
-      gameYear = Math.max(2016, Number(data.gameYear) || 2016);
-
+      window.gameStarted = Boolean(data.gameStarted);
       window.playerCountry = data.playerCountry || null;
-      window.worldDiplomacy = data.worldDiplomacy || {};
-      window.cityWorld = data.cityWorld || [];
-      window.worldTradeHistory = data.worldTradeHistory || [];
-      window.worldEvents = data.worldEvents || [];
 
-      if (Array.isArray(data.worldStates) && window.worldStates) {
-        data.worldStates.forEach(savedState => {
-          const current = window.worldStates.find(
-            state => state.id === savedState.id
-          );
+      if (Array.isArray(data.worldStates)) {
+        window.worldStates = data.worldStates;
+      }
 
-          if (current) {
-            current.population = savedState.population;
-            current.economy = savedState.economy;
-          }
+      if (Array.isArray(data.worldResources)) {
+        window.worldResources = data.worldResources;
+      }
+
+      window.selectedLocation = data.selectedLocation || null;
+
+      if (window.playerCountry) {
+        const country = window.playerCountry;
+
+        const values = {
+          countryDisplay: country.name,
+          yearDisplay: country.year,
+          populationDisplay: Number(country.population || 0).toLocaleString("uk-UA"),
+          treasuryDisplay: Number(country.treasury || 0).toLocaleString("uk-UA"),
+          foodDisplay: Number(country.food || 0).toLocaleString("uk-UA"),
+          woodDisplay: Number(country.wood || 0).toLocaleString("uk-UA"),
+          stoneDisplay: Number(country.stone || 0).toLocaleString("uk-UA"),
+          ironDisplay: Number(country.iron || 0).toLocaleString("uk-UA")
+        };
+
+        Object.entries(values).forEach(([id, value]) => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = value;
         });
+
+        const modal = document.getElementById("setupModal");
+        if (modal) {
+          modal.style.display = "none";
+        }
+
+        window.dispatchEvent(new CustomEvent("countryFounded", {
+          detail: country
+        }));
       }
 
-      const modal = $("setupModal");
-      if (modal && window.playerCountry) {
-        modal.style.display = "none";
-      }
+      saveStatus.textContent = "✅ Збереження завантажено.";
 
-      drawRestoredCountry(window.playerCountry);
-      updateDiplomacyList();
-      updateStatistics();
-      updateClock();
-
-      message("Збереження завантажено!");
     } catch (error) {
       console.error("Помилка завантаження:", error);
-      message("Помилка читання збереження.");
+      saveStatus.textContent =
+        "❌ Збереження пошкоджене або несумісне.";
     }
   }
 
-  panel.querySelectorAll("[data-build]").forEach(button => {
-    button.addEventListener("click", () => {
-      if (typeof window.buildCityBuilding !== "function") {
-        message("Система будівництва недоступна.");
-        return;
-      }
-
-      const result = window.buildCityBuilding(button.dataset.build);
-      message(result);
-      updateStatistics();
-    });
-  });
-
-  $("buyResource").addEventListener("click", () => {
-    const result = window.tradeResources(
-      $("tradeResource").value,
-      $("tradeAmount").value,
-      "buy"
+  function resetGame() {
+    const confirmed = confirm(
+      "Почати нову гру? Поточний прогрес буде видалено."
     );
 
-    message(result);
-    updateStatistics();
-  });
+    if (!confirmed) return;
 
-  $("sellResource").addEventListener("click", () => {
-    const result = window.tradeResources(
-      $("tradeResource").value,
-      $("tradeAmount").value,
-      "sell"
-    );
-
-    message(result);
-    updateStatistics();
-  });
-
-  $("improveRelations").addEventListener("click", () => {
-    const result = window.changeDiplomacy(
-      $("diplomacyCountry").value,
-      20
-    );
-
-    message(result);
-  });
-
-  $("makeAlliance").addEventListener("click", () => {
-    const result = window.createAlliance(
-      $("diplomacyCountry").value
-    );
-
-    message(result);
-  });
-
-  $("setTax").addEventListener("click", () => {
-    const result = window.setTaxRate($("taxInput").value);
-    message(result);
-  });
-
-  $("collectTax").addEventListener("click", () => {
-    const result = window.collectTaxes();
-    message(result);
-    updateStatistics();
-  });
-
-  $("pauseGame").addEventListener("click", () => {
-    paused = !paused;
-    $("pauseGame").textContent =
-      paused ? "▶️ Продовжити" : "⏸️ Пауза";
-    message(paused ? "Гру призупинено." : "Гру продовжено.");
-  });
-
-  $("saveGame").addEventListener("click", saveGame);
-  $("loadGame").addEventListener("click", loadGame);
-
-  // Під'єднуємо кнопки першої частини
-  const oldSaveButton = $("saveBtn");
-  if (oldSaveButton) {
-    oldSaveButton.addEventListener("click", saveGame);
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
   }
 
-  const oldPauseButton = $("pauseBtn");
-  if (oldPauseButton) {
-    oldPauseButton.addEventListener("click", () => {
-      paused = !paused;
-      message(paused ? "Гру призупинено." : "Гру продовжено.");
-    });
-  }
+  document.getElementById("saveGameBtn").addEventListener(
+    "click",
+    saveGame
+  );
 
-  updateDiplomacyList();
-  updateStatistics();
-  updateClock();
+  document.getElementById("loadGameBtn").addEventListener(
+    "click",
+    loadGame
+  );
 
-  // Автоматичне завантаження збереження
+  document.getElementById("resetGameBtn").addEventListener(
+    "click",
+    resetGame
+  );
+
+  // Автоматичне збереження раз на 20 секунд
+  setInterval(() => {
+    if (window.gameStarted && window.playerCountry) {
+      saveGame();
+    }
+  }, 20000);
+
+  // Спроба відновити збереження при запуску
   if (localStorage.getItem(SAVE_KEY)) {
     loadGame();
   }
 
-  // Один ігровий місяць кожні 30 секунд
-  gameTimer = setInterval(advanceTime, 30000);
-
-  // Оновлюємо статистику після заснування держави
-  const foundButton = $("foundBtn");
-  if (foundButton) {
-    foundButton.addEventListener("click", () => {
-      setTimeout(() => {
-        updateStatistics();
-        updateDiplomacyList();
-      }, 100);
-    });
-  }
-
-  console.log("Частина 6 завантажена: гра готова");
+  console.log("Частина 6 завантажена успішно");
 })();
+
+// ======================================
+// КІНЕЦЬ ГРИ
+// ======================================
+</script>
+</body>
+</html>
