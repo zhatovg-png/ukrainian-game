@@ -1347,6 +1347,30 @@ if(loadedGame) {
     startGame();
 }
 
+// ВИПРАВЛЕННЯ: вибір місця для столиці
+const setupBox = document.querySelector("#setup .setupbox");
+
+const chooseLocationButton = document.createElement("button");
+chooseLocationButton.type = "button";
+chooseLocationButton.textContent = "📍 Обрати місце на карті";
+chooseLocationButton.style.width = "100%";
+chooseLocationButton.style.marginBottom = "10px";
+
+setupBox.insertBefore(
+    chooseLocationButton,
+    document.getElementById("chosen")
+);
+
+chooseLocationButton.addEventListener("click", function() {
+    document.getElementById("setup").style.display = "none";
+});
+
+map.on("click", function() {
+    if (!game.started && selectedPlace) {
+        document.getElementById("setup").style.display = "flex";
+    }
+});
+
 </script>
 </body>
 </html>
